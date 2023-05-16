@@ -4,6 +4,8 @@
 
 var scene, cameras = [], renderer, current_cam;
 
+var geometry, material, mesh; 
+
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -13,6 +15,8 @@ function createScene() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxisHelper(10));
+
+    createAtrelado(0, 0 ,0);
 }
 
 //////////////////////
@@ -48,27 +52,65 @@ function createPerspectiveCamera(x, y, z) {
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
-function createCube(x, y, z) {
+function addCube(obj ,x, y, z) {
     'use strict';
 
     var cube = new THREE.Object3D();
 
-    var material = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true });
+    material = new THREE.MeshBasicMaterial({ color: 0x808080, wireframe: true });
 
-    var geometry = new THREE.BoxGeometry(15, 15, 15);
+    geometry = new THREE.BoxGeometry(16, 30, 80);
     
-    var mesh = new THREE.Mesh(geometry, material);
+    mesh = new THREE.Mesh(geometry, material);
     
     mesh.position.set(x, y, z);
     
-    cube.add(mesh);
+    obj.add(mesh);
 
-    scene.add(cube);
-
-    cube.position.x = x;
-    cube.position.y = y;
-    cube.position.z = z;
 }
+
+function addWheels(obj, x, y, z) {
+    'use strict';
+
+    var wheel = new THREE.Object3D();
+
+    material = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true });
+
+    geometry = new THREE.CylinderGeometry(3, 3, 3);
+
+    mesh = new THREE.Mesh(geometry, material);
+
+    mesh.rotation.x = 1.5707963;
+
+    mesh.rotation.z = 1.5707963;
+    
+    mesh.position.set(x, y-3, z);
+    
+    obj.add(mesh);
+}
+
+function createAtrelado(x, y, z) {
+    'use strict';
+
+    var atrelado = new THREE.Object3D();
+
+    addCube(atrelado, 0, 0, 0);
+
+    addWheels(atrelado, 7, -15, -32);
+    addWheels(atrelado, 7, -15, -24);
+    addWheels(atrelado, -7, -15, -32);
+    addWheels(atrelado, -7, -15, -24);
+
+    scene.add(atrelado);
+
+    atrelado.position.x = x;
+    atrelado.position.y = y;
+    atrelado.position.z = z;
+
+}
+
+
+
 
 //////////////////////
 /* CHECK COLLISIONS */
@@ -118,8 +160,6 @@ function init() {
     createOrthographicCamera(0, 70, 0);     //topo (vista para xz)
     createOrthographicCamera(50, 50, -50);  //perspetiva isométrica (projeção ortogonal)
     createPerspectiveCamera(50, 50, 50);    //perspetiva isométrica (projeção perspetiva)
-
-    createCube(0, 0, 0);
 
     render(cameras[0]);
 
