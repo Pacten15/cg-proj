@@ -34,8 +34,8 @@ function createScene() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
-    createOptimus();
-    //createAtrelado(0, 0, 0);
+    createOptimus(0, 0, 0);
+    createAtrelado(25, 0, 0);
 }
 
 //////////////////////
@@ -100,7 +100,7 @@ function createCone(obj, x, y, z, radius, height, color) {
     return mesh;
 }
 
-function createOptimus() {
+function createOptimus(x, y, z) {
     'use strict';
     var optimus = new THREE.Object3D();
     
@@ -172,21 +172,19 @@ function createOptimus() {
 
     scene.add(optimus);
 
-    optimus.position.set(0, 0, 0);
+    optimus.position.set(x, y, z);
 }
 
 function createAtrelado(x, y, z) {
     'use strict';
     var atrelado = new THREE.Object3D();
-    createCube(atrelado, 0, 0, 0, 16, 30, 80);
-    createCylinder(atrelado, 7, -15, -32);
-    createCylinder(atrelado, 7, -15, -24);
-    createCylinder(atrelado, -7, -15, -32);
-    createCylinder(atrelado, -7, -15, -24);
+    createCube(atrelado, 0, 0, 0, 16, 30, 80, gray);
+    createCylinder(atrelado, 7  , -15 -3, -32);
+    createCylinder(atrelado, 7, -15 -3, -24);
+    createCylinder(atrelado, -7, -15 -3, -32);
+    createCylinder(atrelado, -7, -15 -3, -24);
     scene.add(atrelado);
-    atrelado.position.x = x;
-    atrelado.position.y = y;
-    atrelado.position.z = z;
+    atrelado.position.set(x, y, z);
 }
 
 
