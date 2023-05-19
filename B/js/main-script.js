@@ -2,8 +2,9 @@
 /* GLOBAL VARIABLES */
 //////////////////////
 
-var scene, cameras = [], renderer, current_cam;
+var scene, cameras = [], renderer, currentCam, atrelado, optimus, movementVector = [0, 0, 0];
 
+var leftArrow = false, upArrow = false, downArrow = false, rightArrow = false;
 var geometry, material, mesh; 
 
 const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, black = 0x000000;
@@ -35,7 +36,7 @@ function createScene() {
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
     createOptimus(0, 0, 0);
-    createAtrelado(25, 0, 0);
+    createAtrelado(0, 0, -50);
 }
 
 //////////////////////
@@ -102,7 +103,7 @@ function createCone(obj, x, y, z, radius, height, color) {
 
 function createOptimus(x, y, z) {
     'use strict';
-    var optimus = new THREE.Object3D();
+    optimus = new THREE.Object3D();
     
     createCube(optimus, 0, 0, 0, torsoWidth, torsoHeight, torsoDepth, red); // torso
     var abdomenY = -torsoHeight/2 - abdomenHeight/2;
@@ -177,7 +178,7 @@ function createOptimus(x, y, z) {
 
 function createAtrelado(x, y, z) {
     'use strict';
-    var atrelado = new THREE.Object3D();
+    atrelado = new THREE.Object3D();
     createCube(atrelado, 0, 0, 0, 16, 30, 80, gray);
     createCylinder(atrelado, 7  , -15 -3, -32);
     createCylinder(atrelado, 7, -15 -3, -24);
@@ -185,6 +186,22 @@ function createAtrelado(x, y, z) {
     createCylinder(atrelado, -7, -15 -3, -24);
     scene.add(atrelado);
     atrelado.position.set(x, y, z);
+}
+
+function moveAtrelado() {
+    var speed = 0.6;
+    if (leftArrow == true && rightArrow == false) {
+        atrelado.position.x += speed;
+    }
+    else if (leftArrow == false && rightArrow == true) {
+        atrelado.position.x -= speed;
+    }
+    if (upArrow == true && downArrow == false) {
+        atrelado.position.z += speed;
+    }
+    else if (upArrow == false && downArrow == true) {
+        atrelado.position.z -= speed;
+    }
 }
 
 
@@ -218,7 +235,7 @@ function update(){
 /////////////
 function render(camera) {
     'use strict';
-    current_cam = camera;
+    currentCam = camera;
     renderer.render(scene, camera);
 }
 
@@ -241,6 +258,7 @@ function init() {
     render(cameras[0]);
 
     window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
     window.addEventListener("resize", onResize);
 }
 
@@ -249,7 +267,12 @@ function init() {
 /////////////////////
 function animate() {
     'use strict';
-    render(current_cam);
+
+    moveAtrelado();
+
+    render(currentCam);
+
+    requestAnimationFrame(animate);
 }
 
 ////////////////////////////
@@ -264,7 +287,7 @@ function onResize() {
             cameras[i].updateProjectionMatrix();
         }
     }
-    render(current_cam);
+    render(currentCam);
 }
 
 ///////////////////////
@@ -274,6 +297,18 @@ function onKeyDown(e) {
     'use strict';
 
     switch (e.keyCode) {
+        case 37: // left arrow
+            leftArrow = true;
+            break;
+        case 38: // up arrow
+            upArrow = true;
+            break;
+        case 39: // right arrow
+            rightArrow = true;
+            break;
+        case 40: // down arrow
+            downArrow = true;
+            break;
         case 49: // 1
         case 50: // 2
         case 51: // 3 
@@ -287,7 +322,7 @@ function onKeyDown(e) {
                     node.material.wireframe = !node.material.wireframe;
                 }
             })
-            animate();
+            render(currentCam);
             break;
     }
 }
@@ -298,4 +333,18 @@ function onKeyDown(e) {
 function onKeyUp(e){
     'use strict';
 
+    switch (e.keyCode) {
+        case 37: // left arrow
+            leftArrow = false;
+            break;
+        case 38: // up arrow
+            upArrow = false;
+            break;
+        case 39: // right arrow
+            rightArrow = false;
+            break;
+        case 40: // down arrow
+            downArrow = false;
+            break;
+    }
 }
