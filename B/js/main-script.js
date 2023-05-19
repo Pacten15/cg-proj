@@ -274,13 +274,21 @@ function onKeyDown(e) {
     'use strict';
 
     switch (e.keyCode) {
-    case 49: // 1
-    case 50: // 2
-    case 51: // 3 
-    case 52: // 4
-    case 53: // 5
-        render(cameras[e.keyCode - 49]);
-        break;
+        case 49: // 1
+        case 50: // 2
+        case 51: // 3 
+        case 52: // 4
+        case 53: // 5
+            render(cameras[e.keyCode - 49]);
+            break;
+        case 54: // 6
+            scene.traverse(function(node) {
+                if (node instanceof THREE.Mesh) {
+                    node.material.wireframe = !node.material.wireframe;
+                }
+            })
+            animate();
+            break;
     }
 }
 
