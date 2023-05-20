@@ -5,7 +5,8 @@
 var scene, cameras = [], renderer, currentCam, atrelado, optimus, movementVector = [0, 0, 0];
 
 var leftArrow = false, upArrow = false, downArrow = false, rightArrow = false;
-var geometry, material, mesh; 
+var geometry, material, mesh;
+var leftFoot, feet, feetX, feetY, feetZ, angle_feetX, angle_feetY, angle_feetZ, rotatePositive= false, rotateNegative = false;
 
 const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, black = 0x000000;
 
@@ -36,7 +37,7 @@ function createScene() {
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
     createOptimus(0, 0, 0);
-    createAtrelado(0, 0, -50);
+    /*createAtrelado(0, 0, -50);*/
 }
 
 //////////////////////
@@ -159,11 +160,11 @@ function createOptimus(x, y, z) {
     createCylinder(legs,  legWheelX, lowerLegWheelY, 0); // left lower leg wheel
     createCylinder(legs, -legWheelX, lowerLegWheelY, 0); // right lower leg wheel
     
-    var feet = new THREE.Object3D(); optimus.add(feet);
+    feet = new THREE.Object3D(); optimus.add(feet);
     var footX = legLowerX;
     var footY = legLowerY - legLowerHeight/2 + footHeight/2
     var footZ = legLowerDepth/2 + footDepth/2;
-    createCube(feet,  footX, footY, footZ, footWidth, footHeight, footDepth, blue); // left foot
+    var leftFoot = createCube(feet,  footX, footY, footZ, footWidth, footHeight, footDepth, blue); // left foot
     createCube(feet, -footX, footY, footZ, footWidth, footHeight, footDepth, blue); // right foot
     var footGuardX = footX + footWidth/2 + footGuardWidth/2;
     var footGuardY = footY;
@@ -171,10 +172,33 @@ function createOptimus(x, y, z) {
     createCube(feet,  footGuardX, footGuardY, footGuardZ, footGuardWidth, footGuardHeight, footGuardDepth, blue); // left foot guard
     createCube(feet, -footGuardX, footGuardY, footGuardZ, footGuardWidth, footGuardHeight, footGuardDepth, blue); // right foot guard
 
+    feetX = leftFoot.position.x-3; 
+    feetY = leftFoot.position.y;
+    feetZ = leftFoot.position.z;
+    
+    angle_feetX = 0;
+    angle_feetY = 0;
+    angle_feetZ = 0;
+    feet.position.set(0, 0, 0);
+    feet.rotation.set(angle_feetX, angle_feetY, angle_feetZ);
     scene.add(optimus);
 
     optimus.position.set(x, y, z);
 }
+
+function moveFeet() {
+    var speed = Math.PI/360;
+    if (rotatePositive == true) {
+        angle_feetX += speed;
+        feet.rotation.set(angle_feetX, angle_feetY, angle_feetZ);
+    }
+    if (rotateNegative == true) {
+        angle_feetX -= speed;
+        feet.rotation.set(angle_feetX, angle_feetY, angle_feetZ);
+    }
+}
+
+
 
 function createAtrelado(x, y, z) {
     'use strict';
@@ -269,6 +293,8 @@ function animate() {
     'use strict';
 
     moveAtrelado();
+    feet.geometry = new THREE.SphereGeometry(5);
+    moveFeet();
 
     render(currentCam);
 
@@ -324,6 +350,12 @@ function onKeyDown(e) {
             })
             render(currentCam);
             break;
+        case 65 : // letter A
+            rotateNegative = true;
+            break;
+        case 81 :// letter Q
+            rotatePositive = true;
+            break;
     }
 }
 
@@ -345,6 +377,12 @@ function onKeyUp(e){
             break;
         case 40: // down arrow
             downArrow = false;
+            break;
+        case 65 : // letter A
+            rotateNegative = false;
+            break;
+        case 81 :// letter Q
+            rotatePositive = false;
             break;
     }
 }
