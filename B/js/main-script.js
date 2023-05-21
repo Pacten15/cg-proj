@@ -6,7 +6,7 @@ var scene, cameras = [], renderer, currentCam, atrelado, optimus, movementVector
 
 var leftArrow = false, upArrow = false, downArrow = false, rightArrow = false;
 var geometry, material, mesh;
-var leftFoot, feet, feetX, feetY, feetZ, angle_feetX, angle_feetY, angle_feetZ, rotatePositive= false, rotateNegative = false;
+var leftFoot, afootX, afootY, afootZ, feet, feetX, feetY, feetZ, angle_feetX, angle_feetY, angle_feetZ, rotatePositive= false, rotateNegative = false;
 
 const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, black = 0x000000;
 
@@ -161,39 +161,44 @@ function createOptimus(x, y, z) {
     createCylinder(legs, -legWheelX, lowerLegWheelY, 0); // right lower leg wheel
     
     feet = new THREE.Object3D(); optimus.add(feet);
-    var footX = legLowerX;
-    var footY = legLowerY - legLowerHeight/2 + footHeight/2
-    var footZ = legLowerDepth/2 + footDepth/2;
-    var leftFoot = createCube(feet,  footX, footY, footZ, footWidth, footHeight, footDepth, blue); // left foot
+    afootX = legLowerX;
+    afootY = legLowerY - legLowerHeight/2 + footHeight/2
+    afootZ = legLowerDepth/2 + footDepth/2;
+    feet.position.set(afootX-3, afootY , afootZ+1)
+    var footX = 3;
+    var footY = 0;
+    var footZ = -1; 
+    createCube(feet,  footX, footY, footZ, footWidth, footHeight, footDepth, blue); // left foot
     createCube(feet, -footX, footY, footZ, footWidth, footHeight, footDepth, blue); // right foot
     var footGuardX = footX + footWidth/2 + footGuardWidth/2;
     var footGuardY = footY;
     var footGuardZ = footZ + footGuardDepth/2;
     createCube(feet,  footGuardX, footGuardY, footGuardZ, footGuardWidth, footGuardHeight, footGuardDepth, blue); // left foot guard
     createCube(feet, -footGuardX, footGuardY, footGuardZ, footGuardWidth, footGuardHeight, footGuardDepth, blue); // right foot guard
-
-    feetX = leftFoot.position.x-3; 
-    feetY = leftFoot.position.y;
-    feetZ = leftFoot.position.z;
-    
+ 
     angle_feetX = 0;
     angle_feetY = 0;
     angle_feetZ = 0;
-    feet.position.set(0, 0, 0);
     feet.rotation.set(angle_feetX, angle_feetY, angle_feetZ);
     scene.add(optimus);
-
     optimus.position.set(x, y, z);
 }
 
 function moveFeet() {
-    var speed = Math.PI/360;
-    if (rotatePositive == true) {
+    var speed = Math.PI/20 ; // Rotation speed (in radians)
+    var translationSpeed = 0.4; // Translation speed
+
+    if (rotatePositive == true &&   -((3/4) * Math.PI) <= angle_feetX <= ((3/4) * Math.PI)  ) {
         angle_feetX += speed;
+        feet.position.z += translationSpeed;
+        feet.position.y += translationSpeed - 0.2;
         feet.rotation.set(angle_feetX, angle_feetY, angle_feetZ);
     }
-    if (rotateNegative == true) {
+
+    if (rotateNegative == true &&  -((3/4) * Math.PI) <= angle_feetX <=  ((3/4) * Math.PI) ) {
         angle_feetX -= speed;
+        feet.position.z -= translationSpeed;
+        feet.position.y -= translationSpeed - 0.2;
         feet.rotation.set(angle_feetX, angle_feetY, angle_feetZ);
     }
 }
@@ -293,7 +298,7 @@ function animate() {
     'use strict';
 
     moveAtrelado();
-    feet.geometry = new THREE.SphereGeometry(5);
+   
     moveFeet();
 
     render(currentCam);
