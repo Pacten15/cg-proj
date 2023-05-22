@@ -6,7 +6,14 @@ var scene, cameras = [], renderer, currentCam, atrelado, optimus, movementVector
 
 var leftArrow = false, upArrow = false, downArrow = false, rightArrow = false;
 var geometry, material, mesh;
-var leftFoot, afootX, afootY, afootZ, feet, feetX, feetY, feetZ, angle_feetX, angle_feetY, angle_feetZ, rotatePositive= false, rotateNegative = false;
+
+var leftFoot, afootX, afootY, afootZ, feet, feetX, feetY, feetZ, angle_feetX, angle_feetY, angle_feetZ, rotatePositiveFeet= false, rotateNegativeFeet = false; // feet manipulation
+
+var legs, alegsX, alegsY, alegsZ, angleLegsX, angleLegsY, angleLegsZ, rotatePositiveLegs = false, rotateNegativeLegs = false; // legs manipulation
+
+var  arms, translanteInwards, translanteOutwards, translateArmsX, translateArmsY, translateArmsZ; // arms manipulation
+
+var head, aheadX, aheadY, aheadZ, angleHeadX, angleHeadY, angleHeadZ, rotatePositiveHead = false, rotateNegativeHead = false; // head manipulation
 
 const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, black = 0x000000;
 
@@ -116,7 +123,12 @@ function createOptimus(x, y, z) {
     createCylinder(optimus,  waistWheelX, waistWHeelY, 0); // left waist wheel
     createCylinder(optimus, -waistWheelX, waistWHeelY, 0); // right waist wheel
     
-    var head = new THREE.Object3D(); optimus.add(head);
+    head = new THREE.Object3D(); optimus.add(head);
+
+    aheadX = 1;
+    aheadY = -3;
+    aheadZ = 1;
+    head.position.set(0, 0, 0);
     var headBaseY = torsoHeight/2 + 2
     createCube(head, 0, headBaseY, 0, headBaseWidth, headBaseHeight, headBaseDepth, blue); // head base
     var eyeX = 1;
@@ -129,7 +141,15 @@ function createOptimus(x, y, z) {
     createCone(head,  antennaX, antennaY, 0, antennaRadius, antennaHeight, blue); // left antenna
     createCone(head, -antennaX, antennaY, 0, antennaRadius, antennaHeight, blue); // right antenna
 
-    var arms = new THREE.Object3D(); optimus.add(arms);
+
+    angleHeadX = 0;
+    angleHeadY = 0;
+    angleHeadZ = 0;
+    head.rotation.set(angleHeadX, angleHeadY, angleHeadZ);
+
+    
+
+    arms = new THREE.Object3D(); optimus.add(arms);
     var armX = torsoWidth/2 + armWidth/2;
     var lowerArmY = -armHeight;
     createCube(arms,  armX, 0, 0, armWidth, armHeight, armDepth, red); // left upper arm
@@ -143,22 +163,40 @@ function createOptimus(x, y, z) {
     createCube(arms,  lowerExhaustX, upperExhaustY, 0, upperExhaustWidth, upperExhaustHeight, upperExhaustDepth, gray); // left upper exhaust
     createCube(arms, -lowerExhaustX, upperExhaustY, 0, upperExhaustWidth, upperExhaustHeight, upperExhaustDepth, gray); // right lower exhaust
 
-    var legs = new THREE.Object3D(); optimus.add(legs);
+    translateArmsX = 0;
+    translateArmsY = 0;
+    translateArmsZ = 0;
+    arms.position.set(translateArmsX, translateArmsY, translateArmsZ);
+
+    legs = new THREE.Object3D(); optimus.add(legs);
+    alegsY = wheelHeight - 2;
+    legs.position.set(0,0,0);
+    var legsX = 10;
+    var legsY = 0;
+    var legsZ = 10;
     var thighX = abdomenWidth/2 - abdomenWidth/5;
     var thighY = abdomenY - abdomenHeight/2 - thighHeight/2;
-    createCube(legs,  thighX, thighY, 0, thighWidth, thighHeight, thighDepth, gray); // left thigh
-    createCube(legs, -thighX, thighY, 0, thighWidth, thighHeight, thighDepth, gray); // right thigh
+    var thighZ = 0;
+    createCube(legs,  thighX, thighY, thighZ, thighWidth, thighHeight, thighDepth, gray); // left thigh
+    createCube(legs, -thighX, thighY, thighZ, thighWidth, thighHeight, thighDepth, gray); // right thigh
     var legLowerX = thighX;
     var legLowerY = thighY - thighHeight/2 - legLowerHeight/2;
-    createCube(legs,  legLowerX, legLowerY, 0, legLowerWidth, legLowerHeight, legLowerDepth, blue); // left lower leg
-    createCube(legs, -legLowerX, legLowerY, 0, legLowerWidth, legLowerHeight, legLowerDepth, blue); // right lower leg
+    createCube(legs,  legLowerX, legLowerY, thighZ, legLowerWidth, legLowerHeight, legLowerDepth, blue); // left lower leg
+    createCube(legs, -legLowerX, legLowerY, thighZ, legLowerWidth, legLowerHeight, legLowerDepth, blue); // right lower leg
     var legWheelX = legLowerX + legLowerWidth/2 + wheelHeight/2;
     var upperLegWheelY = thighY - thighHeight/2 - 6;
     var lowerLegWheelY = upperLegWheelY - wheelRadius - 2 - wheelRadius;
-    createCylinder(legs,  legWheelX, upperLegWheelY, 0); // left upper leg wheel
-    createCylinder(legs, -legWheelX, upperLegWheelY, 0); // right upper leg wheel
-    createCylinder(legs,  legWheelX, lowerLegWheelY, 0); // left lower leg wheel
-    createCylinder(legs, -legWheelX, lowerLegWheelY, 0); // right lower leg wheel
+    createCylinder(legs,  legWheelX, upperLegWheelY, thighZ); // left upper leg wheel
+    createCylinder(legs, -legWheelX, upperLegWheelY, thighZ); // right upper leg wheel
+    createCylinder(legs,  legWheelX, lowerLegWheelY, thighZ); // left lower leg wheel
+    createCylinder(legs, -legWheelX, lowerLegWheelY, thighZ); // right lower leg wheel
+
+    angleLegsX = 0;
+    angleLegsY = 0;
+    angleLegsZ = 0;
+    legs.rotation.set(angleLegsX, angleLegsY, angleLegsZ);
+
+
     
     feet = new THREE.Object3D(); optimus.add(feet);
     afootX = legLowerX;
@@ -180,6 +218,7 @@ function createOptimus(x, y, z) {
     angle_feetY = 0;
     angle_feetZ = 0;
     feet.rotation.set(angle_feetX, angle_feetY, angle_feetZ);
+    legs.add(feet);
     scene.add(optimus);
     optimus.position.set(x, y, z);
 }
@@ -187,12 +226,52 @@ function createOptimus(x, y, z) {
 function moveFeet() {
     var speed = Math.PI/40 ; // Rotation speed (in radians)
 
-    if (rotatePositive && (feet.rotation.x < Math.PI/2)) {
+    if (rotatePositiveFeet && (feet.rotation.x < Math.PI/2)) {
         feet.rotation.x += speed;
     }
 
-    if (rotateNegative && (0 < feet.rotation.x)) {
+    if (rotateNegativeFeet && (0 < feet.rotation.x)) {
         feet.rotation.x -= speed;
+    }
+}
+
+function moveLegs() {
+    var speed = Math.PI/40 ; // Rotation speed (in radians)
+
+    if (rotatePositiveLegs ) {
+        legs.rotation.x += speed;
+    }
+
+    if (rotateNegativeLegs ) {
+        legs.rotation.x -= speed;
+    }
+}
+
+function moveArms() {
+    var speed = 0.5 ; // Rotation speed (in radians)
+
+    if (translanteOutwards) {
+        arms.position.x += speed;
+        arms.position.y += speed;
+        arms.position.z += speed;
+    }
+
+    if (translanteInwards) {
+        arms.position.x -= speed;
+        arms.position.y -= speed;
+        arms.position.z -= speed;
+    }
+}2
+
+function moveHead() {
+    var speed = Math.PI/60 ; // Rotation speed (in radians)
+
+    if (rotatePositiveHead) {
+        head.rotation.x += speed;
+    }
+
+    if (rotateNegativeHead) {
+        head.rotation.x -= speed;
     }
 }
 
@@ -225,6 +304,8 @@ function moveAtrelado() {
         atrelado.position.z -= speed;
     }
 }
+
+
 
 
 
@@ -294,6 +375,12 @@ function animate() {
    
     moveFeet();
 
+    moveLegs();
+
+    moveArms();
+
+    moveHead();
+
     render(currentCam);
 
     requestAnimationFrame(animate);
@@ -349,10 +436,28 @@ function onKeyDown(e) {
             render(currentCam);
             break;
         case 65 : // letter A
-            rotateNegative = true;
+            rotateNegativeFeet = true;
+            break;
+        case 68: // letter D
+            translanteInwards = true;
+            break;
+        case 69: // letter E
+            translanteOutwards = true;
+            break;
+        case 70: // letter F
+            rotateNegativeHead = true;
             break;
         case 81 :// letter Q
-            rotatePositive = true;
+            rotatePositiveFeet = true;
+            break;
+        case 82 : // letter R
+            rotatePositiveHead = true;
+            break;
+        case 83 : // letter S
+            rotateNegativeLegs = true;
+            break;
+        case 87 : // letter W
+            rotatePositiveLegs = true; // rotation
             break;
     }
 }
@@ -377,10 +482,29 @@ function onKeyUp(e){
             downArrow = false;
             break;
         case 65 : // letter A
-            rotateNegative = false;
+            rotateNegativeFeet = false;
+            break;
+        case 68: // letter D
+            translanteInwards = false;
+            break;
+        case 69: // letter E
+            translanteOutwards = false;
+            break;
+        case 70: // letter F
+            rotateNegativeHead = false;
             break;
         case 81 :// letter Q
-            rotatePositive = false;
+            rotatePositiveFeet = false;
             break;
+        case 82 : // letter R
+            rotatePositiveHead = false;
+            break;
+        case 83 : // letter S
+            rotateNegativeLegs = false;
+            break;
+        case 87 : // letter W
+            rotatePositiveLegs = false; // rotation
+            break; 
+        
     }
 }
