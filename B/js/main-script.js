@@ -164,10 +164,10 @@ function createOptimus(x, y, z) {
     afootX = legLowerX;
     afootY = legLowerY - legLowerHeight/2 + footHeight/2
     afootZ = legLowerDepth/2 + footDepth/2;
-    feet.position.set(afootX-3, afootY , afootZ+1)
+    feet.position.set(0, afootY, 0)
     var footX = 3;
     var footY = 0;
-    var footZ = -1; 
+    var footZ = 3; 
     createCube(feet,  footX, footY, footZ, footWidth, footHeight, footDepth, blue); // left foot
     createCube(feet, -footX, footY, footZ, footWidth, footHeight, footDepth, blue); // right foot
     var footGuardX = footX + footWidth/2 + footGuardWidth/2;
@@ -185,21 +185,14 @@ function createOptimus(x, y, z) {
 }
 
 function moveFeet() {
-    var speed = Math.PI/20 ; // Rotation speed (in radians)
-    var translationSpeed = 0.4; // Translation speed
+    var speed = Math.PI/40 ; // Rotation speed (in radians)
 
-    if (rotatePositive == true &&   -((3/4) * Math.PI) <= angle_feetX <= ((3/4) * Math.PI)  ) {
-        angle_feetX += speed;
-        feet.position.z += translationSpeed;
-        feet.position.y += translationSpeed - 0.2;
-        feet.rotation.set(angle_feetX, angle_feetY, angle_feetZ);
+    if (rotatePositive && (feet.rotation.x < Math.PI/2)) {
+        feet.rotation.x += speed;
     }
 
-    if (rotateNegative == true &&  -((3/4) * Math.PI) <= angle_feetX <=  ((3/4) * Math.PI) ) {
-        angle_feetX -= speed;
-        feet.position.z -= translationSpeed;
-        feet.position.y -= translationSpeed - 0.2;
-        feet.rotation.set(angle_feetX, angle_feetY, angle_feetZ);
+    if (rotateNegative && (0 < feet.rotation.x)) {
+        feet.rotation.x -= speed;
     }
 }
 
