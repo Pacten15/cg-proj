@@ -3,22 +3,29 @@
 //////////////////////
 
 var scene, cameras = [], renderer, currentCam, atrelado, optimus, movementVector = [0, 0, 0];
-
-var leftArrow = false, upArrow = false, downArrow = false, rightArrow = false;
 var geometry, material, mesh;
 
-var leftFoot, afootX, afootY, afootZ, feet, feetX, feetY, feetZ, angle_feetX, angle_feetY, angle_feetZ, rotatePositiveFeet= false, rotateNegativeFeet = false; // feet manipulation
+// arrow keys detection
+var leftArrow = false, upArrow = false, downArrow = false, rightArrow = false;
 
-var legs, alegsX, alegsY, alegsZ, angleLegsX, angleLegsY, angleLegsZ, rotatePositiveLegs = false, rotateNegativeLegs = false; // legs manipulation
+// legs
+var legs, alegsX, alegsY, alegsZ;
+var rotatePositiveLegs = false, rotateNegativeLegs = false; // legs manipulation
 
-var  arms, translanteInwards, translanteOutwards, translateArmsX, translateArmsY, translateArmsZ; // arms manipulation
+// feet
+var originFootX, originFootY, originFootZ
+var feet, feetX, feetY, feetZ;
+var rotatePositiveFeet= false, rotateNegativeFeet = false;
+
+
+var leftArm, rightArm, translanteInwards, translanteOutwards, translateArmsX, translateArmsY, translateArmsZ; // arms manipulation
 
 var head, aheadX, aheadY, aheadZ, angleHeadX, angleHeadY, angleHeadZ, rotatePositiveHead = false, rotateNegativeHead = false; // head manipulation
 
+// colors
 const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, black = 0x000000;
 
-const wireframe = false;
-
+// optimus' parts dimensions
 const torsoWidth           = 16,  torsoHeight           = 10, torsoDepth           = 6;
 const abdomenWidth         = 10,  abdomenHeight         = 9,  abdomenDepth         = 6;
 const waistWidth           = 16,  waistHeight           = 3,  waistDepth           = 1;
@@ -79,7 +86,7 @@ function createPerspectiveCamera(x, y, z) {
 
 function createCube(obj, x, y, z, width, height, depth, color) {
     'use strict';
-    material = new THREE.MeshBasicMaterial({ color: color, wireframe: wireframe });
+    material = new THREE.MeshBasicMaterial({ color: color, wireframe: false });
     geometry = new THREE.BoxGeometry(width, height, depth);
     mesh = new THREE.Mesh(geometry, material)
     mesh.position.set(x, y, z);
@@ -89,7 +96,7 @@ function createCube(obj, x, y, z, width, height, depth, color) {
 
 function createCylinder(obj, x, y, z) {
     'use strict';
-    material = new THREE.MeshBasicMaterial({ color: black, wireframe: wireframe });
+    material = new THREE.MeshBasicMaterial({ color: black, wireframe: false });
     geometry = new THREE.CylinderGeometry(wheelRadius, wheelRadius, wheelHeight);
     mesh = new THREE.Mesh(geometry, material);
     mesh.rotation.x = Math.PI/2;
@@ -101,7 +108,7 @@ function createCylinder(obj, x, y, z) {
 
 function createCone(obj, x, y, z, radius, height, color) {
     'use strict';
-    material = new THREE.MeshBasicMaterial({ color: color, wireframe: wireframe });
+    material = new THREE.MeshBasicMaterial({ color: color, wireframe: false });
     geometry = new THREE.ConeGeometry(radius, height);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
@@ -124,12 +131,8 @@ function createOptimus(x, y, z) {
     createCylinder(optimus, -waistWheelX, waistWHeelY, 0); // right waist wheel
     
     head = new THREE.Object3D(); optimus.add(head);
-
-    aheadX = 1;
-    aheadY = -3;
-    aheadZ = 1;
-    head.position.set(0, 0, 0);
-    var headBaseY = torsoHeight/2 + 2
+    head.position.set(0, 2, 0);
+    var headBaseY = 5
     createCube(head, 0, headBaseY, 0, headBaseWidth, headBaseHeight, headBaseDepth, blue); // head base
     var eyeX = 1;
     var eyeY = headBaseY + 0.5;
@@ -141,41 +144,28 @@ function createOptimus(x, y, z) {
     createCone(head,  antennaX, antennaY, 0, antennaRadius, antennaHeight, blue); // left antenna
     createCone(head, -antennaX, antennaY, 0, antennaRadius, antennaHeight, blue); // right antenna
 
-
-    angleHeadX = 0;
-    angleHeadY = 0;
-    angleHeadZ = 0;
-    head.rotation.set(angleHeadX, angleHeadY, angleHeadZ);
-
-    
-
-    arms = new THREE.Object3D(); optimus.add(arms);
-    var armX = torsoWidth/2 + armWidth/2;
+    leftArm  = new THREE.Object3D(); optimus.add(leftArm);
+    rightArm = new THREE.Object3D(); optimus.add(rightArm);
+    leftArm .position.set( 5, 0, 0)
+    rightArm.position.set(-5, 0, 0)
+    var armX = 3 + armWidth/2;
     var lowerArmY = -armHeight;
-    createCube(arms,  armX, 0, 0, armWidth, armHeight, armDepth, red); // left upper arm
-    createCube(arms, -armX, 0, 0, armWidth, armHeight, armDepth, red); // right upper arm
-    createCube(arms,  armX, lowerArmY, 0, armWidth, armHeight, armDepth, red); // left lower arm
-    createCube(arms, -armX, lowerArmY, 0, armWidth, armHeight, armDepth, red); // right lower arm
+    createCube(leftArm,   armX, 0, 0, armWidth, armHeight, armDepth, red); // left upper arm
+    createCube(rightArm, -armX, 0, 0, armWidth, armHeight, armDepth, red); // right upper arm
     var lowerExhaustX = armX + armWidth/2 + lowerExhaustWidth/2;
     var upperExhaustY = lowerExhaustHeight/2 + upperExhaustHeight/2;
-    createCube(arms,  lowerExhaustX, 0, 0, lowerExhaustWidth, lowerExhaustHeight, lowerExhaustDepth, gray); // left lower exhaust
-    createCube(arms, -lowerExhaustX, 0, 0, lowerExhaustWidth, lowerExhaustHeight, lowerExhaustDepth, gray); // right lower exhaust
-    createCube(arms,  lowerExhaustX, upperExhaustY, 0, upperExhaustWidth, upperExhaustHeight, upperExhaustDepth, gray); // left upper exhaust
-    createCube(arms, -lowerExhaustX, upperExhaustY, 0, upperExhaustWidth, upperExhaustHeight, upperExhaustDepth, gray); // right lower exhaust
+    createCube(leftArm,   lowerExhaustX, 0, 0, lowerExhaustWidth, lowerExhaustHeight, lowerExhaustDepth, gray); // left lower exhaust
+    createCube(rightArm, -lowerExhaustX, 0, 0, lowerExhaustWidth, lowerExhaustHeight, lowerExhaustDepth, gray); // right lower exhaust
+    createCube(leftArm,   lowerExhaustX, upperExhaustY, 0, upperExhaustWidth, upperExhaustHeight, upperExhaustDepth, gray); // left upper exhaust
+    createCube(rightArm, -lowerExhaustX, upperExhaustY, 0, upperExhaustWidth, upperExhaustHeight, upperExhaustDepth, gray); // right lower exhaust
 
-    translateArmsX = 0;
-    translateArmsY = 0;
-    translateArmsZ = 0;
-    arms.position.set(translateArmsX, translateArmsY, translateArmsZ);
+    createCube(leftArm,   armX, lowerArmY, 0, armWidth, armHeight, armDepth, red); // left lower arm
+    createCube(rightArm, -armX, lowerArmY, 0, armWidth, armHeight, armDepth, red); // right lower arm
 
     legs = new THREE.Object3D(); optimus.add(legs);
-    alegsY = wheelHeight - 2;
-    legs.position.set(0,0,0);
-    var legsX = 10;
-    var legsY = 0;
-    var legsZ = 10;
+    legs.position.set(0, abdomenY-2.5, 0);
     var thighX = abdomenWidth/2 - abdomenWidth/5;
-    var thighY = abdomenY - abdomenHeight/2 - thighHeight/2;
+    var thighY = -2 - thighHeight/2;
     var thighZ = 0;
     createCube(legs,  thighX, thighY, thighZ, thighWidth, thighHeight, thighDepth, gray); // left thigh
     createCube(legs, -thighX, thighY, thighZ, thighWidth, thighHeight, thighDepth, gray); // right thigh
@@ -191,18 +181,12 @@ function createOptimus(x, y, z) {
     createCylinder(legs,  legWheelX, lowerLegWheelY, thighZ); // left lower leg wheel
     createCylinder(legs, -legWheelX, lowerLegWheelY, thighZ); // right lower leg wheel
 
-    angleLegsX = 0;
-    angleLegsY = 0;
-    angleLegsZ = 0;
-    legs.rotation.set(angleLegsX, angleLegsY, angleLegsZ);
-
-
     
     feet = new THREE.Object3D(); optimus.add(feet);
-    afootX = legLowerX;
-    afootY = legLowerY - legLowerHeight/2 + footHeight/2
-    afootZ = legLowerDepth/2 + footDepth/2;
-    feet.position.set(0, afootY, 0)
+    originFootX = legLowerX;
+    originFootY = legLowerY - legLowerHeight/2 + footHeight/2
+    originFootZ = legLowerDepth/2 + footDepth/2;
+    feet.position.set(0, originFootY, 0)
     var footX = 3;
     var footY = 0;
     var footZ = 3; 
@@ -214,13 +198,60 @@ function createOptimus(x, y, z) {
     createCube(feet,  footGuardX, footGuardY, footGuardZ, footGuardWidth, footGuardHeight, footGuardDepth, blue); // left foot guard
     createCube(feet, -footGuardX, footGuardY, footGuardZ, footGuardWidth, footGuardHeight, footGuardDepth, blue); // right foot guard
  
-    angle_feetX = 0;
-    angle_feetY = 0;
-    angle_feetZ = 0;
-    feet.rotation.set(angle_feetX, angle_feetY, angle_feetZ);
     legs.add(feet);
+    
     scene.add(optimus);
     optimus.position.set(x, y, z);
+}
+
+function moveHead() {
+    var speed = Math.PI/40 ; // Rotation speed (in radians)
+
+    if (rotatePositiveHead) {
+        head.rotation.x += speed;
+        if (head.rotation.x >= 0) head.rotation.x = 0;
+    }
+
+    if (rotateNegativeHead) {
+        head.rotation.x -= speed;
+        if (head.rotation.x <= -Math.PI/2) head.rotation.x = -Math.PI/2;
+    }
+}
+
+function moveArms() {
+    var speed = Math.PI/40 ; // Rotation speed (in radians)
+
+    if (translanteOutwards) { // E
+        leftArm.rotation.y  -= speed;
+        rightArm.rotation.y += speed;
+        if (leftArm.rotation.y <= 0) {
+            leftArm.rotation.y  = 0;
+            rightArm.rotation.y = 0;
+        }
+    }
+
+    if (translanteInwards) { // D
+        leftArm.rotation.y  += speed;
+        rightArm.rotation.y -= speed;
+        if (leftArm.rotation.y >=  Math.PI/2) { 
+            leftArm.rotation.y  =  Math.PI/2;
+            rightArm.rotation.y = -Math.PI/2;
+        }
+    }
+}
+
+function moveLegs() {
+    var speed = Math.PI/40 ; // Rotation speed (in radians)
+
+    if (rotatePositiveLegs) {
+        legs.rotation.x += speed;
+        if (legs.rotation.x >= Math.PI/2) legs.rotation.x = Math.PI/2;
+    }
+
+    if (rotateNegativeLegs ) {
+        legs.rotation.x -= speed;
+        if (legs.rotation.x <= 0) legs.rotation.x = 0;
+    }
 }
 
 function moveFeet() {
@@ -228,53 +259,14 @@ function moveFeet() {
 
     if (rotatePositiveFeet && (feet.rotation.x < Math.PI/2)) {
         feet.rotation.x += speed;
+        if (feet.rotation.x >= Math.PI/2) feet.rotation.x = Math.PI/2;
     }
 
-    if (rotateNegativeFeet && (0 < feet.rotation.x)) {
+    if (rotateNegativeFeet && (feet.rotation.x > 0 )) {
         feet.rotation.x -= speed;
+        if (feet.rotation.x <= 0) feet.rotation.x = 0;
     }
 }
-
-function moveLegs() {
-    var speed = Math.PI/40 ; // Rotation speed (in radians)
-
-    if (rotatePositiveLegs ) {
-        legs.rotation.x += speed;
-    }
-
-    if (rotateNegativeLegs ) {
-        legs.rotation.x -= speed;
-    }
-}
-
-function moveArms() {
-    var speed = 0.5 ; // Rotation speed (in radians)
-
-    if (translanteOutwards) {
-        arms.position.x += speed;
-        arms.position.y += speed;
-        arms.position.z += speed;
-    }
-
-    if (translanteInwards) {
-        arms.position.x -= speed;
-        arms.position.y -= speed;
-        arms.position.z -= speed;
-    }
-}2
-
-function moveHead() {
-    var speed = Math.PI/60 ; // Rotation speed (in radians)
-
-    if (rotatePositiveHead) {
-        head.rotation.x += speed;
-    }
-
-    if (rotateNegativeHead) {
-        head.rotation.x -= speed;
-    }
-}
-
 
 
 function createAtrelado(x, y, z) {
