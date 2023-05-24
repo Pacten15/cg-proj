@@ -22,6 +22,8 @@ var leftArm, rightArm, leftLowerArm, rightLowerArm, translanteInwards, translant
 
 var head, aheadX, aheadY, aheadZ, angleHeadX, angleHeadY, angleHeadZ, rotatePositiveHead = false, rotateNegativeHead = false; // head manipulation
 
+var attacherMaxX, attacherMinX, attacherMaxY,  attacherMinY, attacherMaxZ, attacherMinZ, attachMaxX, attachMinX, attachMaxY, attachMinY, attachMaxZ, attachMinZ;
+
 // colors
 const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, black = 0x000000;
 
@@ -51,7 +53,7 @@ function createScene() {
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
     createOptimus(0, 0, 0);
-    /*createAtrelado(0, 0, -50);*/
+    createAtrelado(0, 6, -50);
 }
 
 //////////////////////
@@ -202,6 +204,13 @@ function createOptimus(x, y, z) {
     createCube(feet, -footGuardX, footGuardY, footGuardZ, footGuardWidth, footGuardHeight, footGuardDepth, blue); // right foot guard
  
     legs.add(feet);
+
+    attachMaxX = originFootX + footWidth/2 + footGuardWidth/2 ;
+    attachMinX = -(originFootX + footWidth/2 + footGuardWidth/2);
+    attachMaxY = originFootY;
+    attachMinY = -(originFootY);
+    attachMaxZ = originFootZ + footGuardDepth/2 + 30;
+    attachMaxZ = -(originFootZ + footGuardDepth/2 + 30);
     
     scene.add(optimus);
     optimus.position.set(x, y, z);
@@ -217,7 +226,7 @@ function moveHead() {
 
     if (rotateNegativeHead) {
         head.rotation.x -= speed;
-        if (head.rotation.x <= -Math.PI/2) head.rotation.x = -Math.PI/2;
+        if (head.rotation.x <= -Math.PI) head.rotation.x = -Math.PI;
     }
 }
 
@@ -284,11 +293,18 @@ function createAtrelado(x, y, z) {
     'use strict';
     atrelado = new THREE.Object3D();
     createCube(atrelado, 0, 0, 0, 16, 30, 80, gray);
-    createCylinder(atrelado, 7  , -15 -3, -32);
+    createCylinder(atrelado, 7, -15 -3, -32);
     createCylinder(atrelado, 7, -15 -3, -24);
     createCylinder(atrelado, -7, -15 -3, -32);
     createCylinder(atrelado, -7, -15 -3, -24);
+    createCube(atrelado, 0, -15, 25, 3, 5, 3, black);
     scene.add(atrelado);
+    attacherMaxX = x + 3;
+    attacherMinX = x - 3;
+    attacherMaxY = y - 15 + 5;
+    attacherMinY = y - 15 - 5;
+    attacherMaxZ = z + 25 + 3;
+    attacherMinZ = z + 25 - 3;
     atrelado.position.set(x, y, z);
 }
 
@@ -306,10 +322,25 @@ function moveAtrelado() {
     else if (upArrow == false && downArrow == true) {
         atrelado.position.z -= speed;
     }
+    handleCollisions();
+    attacherMaxX = atrelado.position.x + 3;
+    attacherMinX = atrelado.position.x - 3;
+    attacherMaxY = atrelado.position.y - 15 + 5;
+    attacherMinY = atrelado.position.y - 15 - 5;
+    attacherMaxZ = atrelado.position.z + 25 + 3;
+    attacherMinZ = atrelado.position.z + 25 - 3;
+    
 }
 
 
-
+function checkOptimusBuilt() {
+    if (legs.rotation.x == Math.PI/2 && feet.rotation.x == Math.PI/2 &&  
+        leftArm.rotation.y  ==  Math.PI/2 && rightArm.rotation.y == -Math.PI/2 &&
+        head.rotation.x == - Math.PI )
+        return true;
+    else
+        return false;
+}
 
 
 //////////////////////
@@ -317,14 +348,19 @@ function moveAtrelado() {
 //////////////////////
 function checkCollisions(){
     'use strict';
-
-}
+    if ((attacherMaxZ < attachMinZ || attacherMinZ > attachMaxZ) && (attacherMaxX >= attachMinX && attacherMinX <= attachMaxX) )
+        return true;
+} 
 
 ///////////////////////
 /* HANDLE COLLISIONS */
 ///////////////////////
 function handleCollisions(){
     'use strict';
+    if(checkOptimusBuilt() && checkCollisions()) {
+      createCube(atrelado, 0, 20, 0, 6, 6, 6, yellow) ;
+        /*animate Mário*/
+    }
 
 }
 
