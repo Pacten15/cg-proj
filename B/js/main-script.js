@@ -53,7 +53,7 @@ function createScene() {
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
     createOptimus(0, 0, 0);
-    createAtrelado(0, 6, -50);
+    createAtrelado(0, 3, -50);
     freeCollisions = false;
 }
 
@@ -100,7 +100,7 @@ function createCube(obj, x, y, z, width, height, depth, color) {
 function createCylinder(obj, x, y, z) {
     'use strict';
     material = new THREE.MeshBasicMaterial({ color: black, wireframe: false });
-    geometry = new THREE.CylinderGeometry(wheelRadius, wheelRadius, wheelHeight);
+    geometry = new THREE.CylinderGeometry(wheelRadius, wheelRadius, wheelHeight,32);
     mesh = new THREE.Mesh(geometry, material);
     mesh.rotation.x = Math.PI/2;
     mesh.rotation.z = Math.PI/2;
@@ -293,7 +293,7 @@ function moveFeet() {
 function createAtrelado(x, y, z) {
     'use strict';
     atrelado = new THREE.Object3D();
-    mainCubeAtrelado = createCube(atrelado, 0, 0, 0, 16, 24, 80, gray);
+    mainCubeAtrelado = createCube(atrelado, 0, 0, 0, 16, 24, 80, yellow);
     createCylinder(atrelado, 7, -12 -3, -32);
     createCylinder(atrelado, 7, -12 -3, -24);
     createCylinder(atrelado, -7, -12 -3, -32);
@@ -359,13 +359,13 @@ function handleCollisions(){
     'use strict';
     var xDifference, yDifference, zDifference;
     xDifference = atrelado.position.x;
-    yDifference = atrelado.position.y - 6;
+    yDifference = atrelado.position.y - 3;
     zDifference = atrelado.position.z + 50;
     if (xDifference < 0.1 && yDifference < 0.1 && zDifference < 0.1) {
-        mainCubeAtrelado.material.color.set(gray);
+        mainCubeAtrelado.material.color.set(yellow);
         freeCollisions = true;
         atrelado.position.x = 0;
-        atrelado.position.y = 6;
+        atrelado.position.y = 3;
         atrelado.position.z = -50;
     }
     else {
@@ -375,7 +375,7 @@ function handleCollisions(){
         atrelado.position.y -= yDifference/30;
         atrelado.position.z -= zDifference/30;
         xDifference = atrelado.position.x;
-        yDifference = atrelado.position.y - 6;
+        yDifference = atrelado.position.y - 3;
         zDifference = atrelado.position.z + 50;
         attacherMaxX = atrelado.position.x + 3;
         attacherMinX = atrelado.position.x - 3;
