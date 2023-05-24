@@ -18,7 +18,7 @@ var feet, feetX, feetY, feetZ;
 var rotatePositiveFeet= false, rotateNegativeFeet = false;
 
 
-var leftArm, rightArm, translanteInwards, translanteOutwards, translateArmsX, translateArmsY, translateArmsZ; // arms manipulation
+var leftArm, rightArm, leftLowerArm, rightLowerArm, translanteInwards, translanteOutwards, translateArmsX, translateArmsY, translateArmsZ; // arms manipulation
 
 var head, aheadX, aheadY, aheadZ, angleHeadX, angleHeadY, angleHeadZ, rotatePositiveHead = false, rotateNegativeHead = false; // head manipulation
 
@@ -149,7 +149,6 @@ function createOptimus(x, y, z) {
     leftArm .position.set( 5, 0, 0)
     rightArm.position.set(-5, 0, 0)
     var armX = 3 + armWidth/2;
-    var lowerArmY = -armHeight;
     createCube(leftArm,   armX, 0, 0, armWidth, armHeight, armDepth, red); // left upper arm
     createCube(rightArm, -armX, 0, 0, armWidth, armHeight, armDepth, red); // right upper arm
     var lowerExhaustX = armX + armWidth/2 + lowerExhaustWidth/2;
@@ -158,9 +157,13 @@ function createOptimus(x, y, z) {
     createCube(rightArm, -lowerExhaustX, 0, 0, lowerExhaustWidth, lowerExhaustHeight, lowerExhaustDepth, gray); // right lower exhaust
     createCube(leftArm,   lowerExhaustX, upperExhaustY, 0, upperExhaustWidth, upperExhaustHeight, upperExhaustDepth, gray); // left upper exhaust
     createCube(rightArm, -lowerExhaustX, upperExhaustY, 0, upperExhaustWidth, upperExhaustHeight, upperExhaustDepth, gray); // right lower exhaust
-
-    createCube(leftArm,   armX, lowerArmY, 0, armWidth, armHeight, armDepth, red); // left lower arm
-    createCube(rightArm, -armX, lowerArmY, 0, armWidth, armHeight, armDepth, red); // right lower arm
+    leftLowerArm  = new THREE.Object3D(); leftArm .add(leftLowerArm);
+    rightLowerArm = new THREE.Object3D(); rightArm.add(rightLowerArm);
+    var lowerArmY = -armHeight/2 - 2;
+    leftLowerArm .position.set( armX, lowerArmY, 0);
+    rightLowerArm.position.set(-armX, lowerArmY, 0);
+    createCube(leftLowerArm,  0, -3, 0, armWidth, armHeight, armDepth, red); // left lower arm
+    createCube(rightLowerArm, 0, -3, 0, armWidth, armHeight, armDepth, red); // right lower arm
 
     legs = new THREE.Object3D(); optimus.add(legs);
     legs.position.set(0, abdomenY-2.5, 0);
@@ -224,18 +227,26 @@ function moveArms() {
     if (translanteOutwards) { // E
         leftArm.rotation.y  -= speed;
         rightArm.rotation.y += speed;
+        leftLowerArm.rotation.z  += speed;
+        rightLowerArm.rotation.z -= speed;
         if (leftArm.rotation.y <= 0) {
             leftArm.rotation.y  = 0;
             rightArm.rotation.y = 0;
+            leftLowerArm.rotation.z  = 0;
+            rightLowerArm.rotation.z = 0;
         }
     }
 
     if (translanteInwards) { // D
         leftArm.rotation.y  += speed;
         rightArm.rotation.y -= speed;
+        leftLowerArm.rotation.z  -= speed;
+        rightLowerArm.rotation.z += speed;
         if (leftArm.rotation.y >=  Math.PI/2) { 
             leftArm.rotation.y  =  Math.PI/2;
             rightArm.rotation.y = -Math.PI/2;
+            leftLowerArm.rotation.z  = -Math.PI/2;
+            rightLowerArm.rotation.z =  Math.PI/2;
         }
     }
 }
