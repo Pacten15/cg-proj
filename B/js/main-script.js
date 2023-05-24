@@ -2,7 +2,7 @@
 /* GLOBAL VARIABLES */
 //////////////////////
 
-var scene, cameras = [], renderer, currentCam, atrelado, optimus, movementVector = [0, 0, 0];
+var scene, cameras = [], renderer, currentCam, atrelado, optimus, movementVector = [0, 0, 0], freeCollisions, mainCubeAtrelado;
 var geometry, material, mesh;
 
 // arrow keys detection
@@ -54,6 +54,7 @@ function createScene() {
     scene.add(new THREE.AxesHelper(10));
     createOptimus(0, 0, 0);
     createAtrelado(0, 6, -50);
+    freeCollisions = false;
 }
 
 //////////////////////
@@ -292,12 +293,12 @@ function moveFeet() {
 function createAtrelado(x, y, z) {
     'use strict';
     atrelado = new THREE.Object3D();
-    createCube(atrelado, 0, 0, 0, 16, 30, 80, gray);
-    createCylinder(atrelado, 7, -15 -3, -32);
-    createCylinder(atrelado, 7, -15 -3, -24);
-    createCylinder(atrelado, -7, -15 -3, -32);
-    createCylinder(atrelado, -7, -15 -3, -24);
-    createCube(atrelado, 0, -15, 25, 3, 5, 3, black);
+    mainCubeAtrelado = createCube(atrelado, 0, 0, 0, 16, 24, 80, gray);
+    createCylinder(atrelado, 7, -12 -3, -32);
+    createCylinder(atrelado, 7, -12 -3, -24);
+    createCylinder(atrelado, -7, -12 -3, -32);
+    createCylinder(atrelado, -7, -12 -3, -24);
+    createCube(atrelado, 0, -13, 25, 3, 5, 3, black);
     scene.add(atrelado);
     attacherMaxX = x + 3;
     attacherMinX = x - 3;
@@ -322,7 +323,6 @@ function moveAtrelado() {
     else if (upArrow == false && downArrow == true) {
         atrelado.position.z -= speed;
     }
-    handleCollisions();
     attacherMaxX = atrelado.position.x + 3;
     attacherMinX = atrelado.position.x - 3;
     attacherMaxY = atrelado.position.y - 15 + 5;
@@ -348,7 +348,7 @@ function checkOptimusBuilt() {
 //////////////////////
 function checkCollisions(){
     'use strict';
-    if ((attacherMaxZ < attachMinZ || attacherMinZ > attachMaxZ) && (attacherMaxX >= attachMinX && attacherMinX <= attachMaxX) )
+    if ((attacherMaxZ < attachMinZ || attacherMinZ > attachMaxZ) && (attacherMaxX >= attachMinX && attacherMinX <= attachMaxX))
         return true;
 } 
 
@@ -357,11 +357,33 @@ function checkCollisions(){
 ///////////////////////
 function handleCollisions(){
     'use strict';
-    if(checkOptimusBuilt() && checkCollisions()) {
-      createCube(atrelado, 0, 20, 0, 6, 6, 6, yellow) ;
-        /*animate Mário*/
+    var xDifference, yDifference, zDifference;
+    xDifference = atrelado.position.x;
+    yDifference = atrelado.position.y - 6;
+    zDifference = atrelado.position.z + 50;
+    if (xDifference < 0.1 && yDifference < 0.1 && zDifference < 0.1) {
+        mainCubeAtrelado.material.color.set(gray);
+        freeCollisions = true;
+        atrelado.position.x = 0;
+        atrelado.position.y = 6;
+        atrelado.position.z = -50;
     }
-
+    else {
+        mainCubeAtrelado.material.color.set(0xDDBB00);
+        freeCollisions = false;
+        atrelado.position.x -= xDifference/30;
+        atrelado.position.y -= yDifference/30;
+        atrelado.position.z -= zDifference/30;
+        xDifference = atrelado.position.x;
+        yDifference = atrelado.position.y - 6;
+        zDifference = atrelado.position.z + 50;
+        attacherMaxX = atrelado.position.x + 3;
+        attacherMinX = atrelado.position.x - 3;
+        attacherMaxY = atrelado.position.y - 15 + 5;
+        attacherMinY = atrelado.position.y - 15 - 5;
+        attacherMaxZ = atrelado.position.z + 25 + 3;
+        attacherMinZ = atrelado.position.z + 25 - 3;
+    }
 }
 
 ////////////
@@ -410,16 +432,23 @@ function init() {
 function animate() {
     'use strict';
 
-    moveAtrelado();
+    if(checkOptimusBuilt() && checkCollisions() && !freeCollisions) {
+        handleCollisions();
+    }
+    else {
+        if(!checkOptimusBuilt() || !checkCollisions())
+            freeCollisions = false;
+
+        moveAtrelado();
    
-    moveFeet();
+        moveFeet();
 
-    moveLegs();
+        moveLegs();
 
-    moveArms();
+        moveArms();
 
-    moveHead();
-
+        moveHead();
+    }
     render(currentCam);
 
     requestAnimationFrame(animate);
