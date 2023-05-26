@@ -17,6 +17,7 @@ var originFootX, originFootY, originFootZ
 var feet, feetX, feetY, feetZ;
 var rotatePositiveFeet= false, rotateNegativeFeet = false;
 
+var bleh;
 
 var leftArm, rightArm, leftLowerArm, rightLowerArm, translanteInwards, translanteOutwards, translateArmsX, translateArmsY, translateArmsZ; // arms manipulation
 
@@ -25,7 +26,7 @@ var head, aheadX, aheadY, aheadZ, angleHeadX, angleHeadY, angleHeadZ, rotatePosi
 var attacherMaxX, attacherMinX, attacherMaxY,  attacherMinY, attacherMaxZ, attacherMinZ, attachMaxX, attachMinX, attachMaxY, attachMinY, attachMaxZ, attachMinZ;
 
 // colors
-const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, black = 0x000000;
+const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000;
 
 // optimus' parts dimensions
 const torsoWidth           = 16,  torsoHeight           = 10, torsoDepth           = 6;
@@ -52,8 +53,8 @@ function createScene() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
-    createOptimus(0, 0, 0);
-    createAtrelado(0, 3, -50);
+    createOptimus(0, 21, 0);
+    createAtrelado(0, 0, -50);
     freeCollisions = false;
 }
 
@@ -266,12 +267,20 @@ function moveLegs() {
 
     if (rotatePositiveLegs) {
         legs.rotation.x += speed;
-        if (legs.rotation.x >= Math.PI/2) legs.rotation.x = Math.PI/2;
+        optimus.position.y = 24 - (28 - (Math.cos(legs.rotation.x) * 28));
+        if (legs.rotation.x >= Math.PI/2) {
+          legs.rotation.x = Math.PI/2;
+          optimus.position.y = 0;
+        }
     }
 
     if (rotateNegativeLegs ) {
         legs.rotation.x -= speed;
-        if (legs.rotation.x <= 0) legs.rotation.x = 0;
+        optimus.position.y = (28 - (Math.sin(legs.rotation.x) * 28));
+        if (legs.rotation.x <= 0) { 
+            legs.rotation.x = 0;
+            optimus.position.y = 24;
+        }
     }
 }
 
@@ -293,7 +302,7 @@ function moveFeet() {
 function createAtrelado(x, y, z) {
     'use strict';
     atrelado = new THREE.Object3D();
-    mainCubeAtrelado = createCube(atrelado, 0, 0, 0, 16, 24, 80, yellow);
+    mainCubeAtrelado = createCube(atrelado, 0, 0, 0, 16, 24, 80, darkGray);
     createCylinder(atrelado, 7, -12 -3, -32);
     createCylinder(atrelado, 7, -12 -3, -24);
     createCylinder(atrelado, -7, -12 -3, -32);
@@ -362,7 +371,7 @@ function handleCollisions(){
     yDifference = atrelado.position.y - 3;
     zDifference = atrelado.position.z + 50;
     if (xDifference < 0.1 && yDifference < 0.1 && zDifference < 0.1) {
-        mainCubeAtrelado.material.color.set(yellow);
+        mainCubeAtrelado.material.color.set(darkGray);
         freeCollisions = true;
         atrelado.position.x = 0;
         atrelado.position.y = 3;
