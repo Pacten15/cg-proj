@@ -46,6 +46,9 @@ const legLowerWidth        = 4,   legLowerHeight        = 18, legLowerDepth     
 const footWidth            = 4,   footHeight            = 4,  footDepth            = 2;
 const footGuardWidth       = 3,   footGuardHeight       = 4,  footGuardDepth       = 1;
 
+const optimusWorldY = 24;
+const legsWorldY = 28;
+
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
@@ -55,7 +58,7 @@ function createScene() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
-    createOptimus(0, 21, 0);
+    createOptimus(0, optimusWorldY, 0);
     createAtrelado(0, 3, -50);
     freeCollisions = false;
 }
@@ -269,7 +272,7 @@ function moveLegs() {
 
     if (rotatePositiveLegs) {
         legs.rotation.x += speed;
-        optimus.position.y = 21- (25 - (Math.cos(legs.rotation.x) * 25));
+        optimus.position.y = optimusWorldY - (legsWorldY - (Math.cos(legs.rotation.x) * legsWorldY));
         if (legs.rotation.x >= Math.PI/2) {
           legs.rotation.x = Math.PI/2;
           optimus.position.y = 0;
@@ -278,10 +281,10 @@ function moveLegs() {
 
     if (rotateNegativeLegs ) {
         legs.rotation.x -= speed;
-        optimus.position.y = (25 - (Math.sin(legs.rotation.x) * 25));
+        optimus.position.y = (legsWorldY - (Math.sin(legs.rotation.x) * legsWorldY));
         if (legs.rotation.x <= 0) { 
             legs.rotation.x = 0;
-            optimus.position.y = 21;
+            optimus.position.y = optimusWorldY;
         }
     }
 }
@@ -299,7 +302,6 @@ function moveFeet() {
         if (feet.rotation.x <= 0) feet.rotation.x = 0;
     }
 }
-
 
 function createAtrelado(x, y, z) {
     'use strict';
