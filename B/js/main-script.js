@@ -23,7 +23,9 @@ var leftArm, rightArm, leftLowerArm, rightLowerArm, translanteInwards, translant
 
 var head, aheadX, aheadY, aheadZ, angleHeadX, angleHeadY, angleHeadZ, rotatePositiveHead = false, rotateNegativeHead = false; // head manipulation
 
-var attacherMaxX, attacherMinX, attacherMaxY,  attacherMinY, attacherMaxZ, attacherMinZ, attachMaxX, attachMinX, attachMaxY, attachMinY, attachMaxZ, attachMinZ;
+var attacherMaxX, attacherMinX, attacherMaxY,  attacherMinY, attacherMaxZ, attacherMinZ, attachMaxX, attachMinX, attachMaxY, attachMinY, attachMaxZ, attachMinZ; //Collisions
+
+var clock, delta;
 
 // colors
 const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000;
@@ -54,7 +56,7 @@ function createScene() {
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
     createOptimus(0, 21, 0);
-    createAtrelado(0, 0, -50);
+    createAtrelado(0, 3, -50);
     freeCollisions = false;
 }
 
@@ -219,7 +221,7 @@ function createOptimus(x, y, z) {
 }
 
 function moveHead() {
-    var speed = Math.PI/40 ; // Rotation speed (in radians)
+    var speed = Math.PI * delta ; // Rotation speed (in radians)
 
     if (rotatePositiveHead) {
         head.rotation.x += speed;
@@ -233,7 +235,7 @@ function moveHead() {
 }
 
 function moveArms() {
-    var speed = Math.PI/40 ; // Rotation speed (in radians)
+    var speed = Math.PI * delta; // Rotation speed (in radians)
 
     if (translanteOutwards) { // E
         leftArm.rotation.y  -= speed;
@@ -263,11 +265,11 @@ function moveArms() {
 }
 
 function moveLegs() {
-    var speed = Math.PI/40 ; // Rotation speed (in radians)
+    var speed = Math.PI * delta ; // Rotation speed (in radians)
 
     if (rotatePositiveLegs) {
         legs.rotation.x += speed;
-        optimus.position.y = 24 - (28 - (Math.cos(legs.rotation.x) * 28));
+        optimus.position.y = 21- (25 - (Math.cos(legs.rotation.x) * 25));
         if (legs.rotation.x >= Math.PI/2) {
           legs.rotation.x = Math.PI/2;
           optimus.position.y = 0;
@@ -276,16 +278,16 @@ function moveLegs() {
 
     if (rotateNegativeLegs ) {
         legs.rotation.x -= speed;
-        optimus.position.y = (28 - (Math.sin(legs.rotation.x) * 28));
+        optimus.position.y = (25 - (Math.sin(legs.rotation.x) * 25));
         if (legs.rotation.x <= 0) { 
             legs.rotation.x = 0;
-            optimus.position.y = 24;
+            optimus.position.y = 21;
         }
     }
 }
 
 function moveFeet() {
-    var speed = Math.PI/40 ; // Rotation speed (in radians)
+    var speed = Math.PI * delta; // Rotation speed (in radians)
 
     if (rotatePositiveFeet && (feet.rotation.x < Math.PI/2)) {
         feet.rotation.x += speed;
@@ -319,7 +321,7 @@ function createAtrelado(x, y, z) {
 }
 
 function moveAtrelado() {
-    var speed = 0.6;
+    var speed = 20 * delta;
     if (leftArrow == true && rightArrow == false) {
         atrelado.position.x += speed;
     }
@@ -399,7 +401,27 @@ function handleCollisions(){
 /* UPDATE */
 ////////////
 function update(){
+
     'use strict';
+    delta = clock.getDelta();
+    console.log(delta);
+    if(checkOptimusBuilt() && checkCollisions() && !freeCollisions) {
+        handleCollisions();
+    }
+    else {
+        if(!checkOptimusBuilt() || !checkCollisions())
+            freeCollisions = false;
+
+        moveAtrelado();
+   
+        moveFeet();
+
+        moveLegs();
+
+        moveArms();
+
+        moveHead();
+    }
 
 }
 
@@ -417,6 +439,7 @@ function render(camera) {
 ////////////////////////////////
 function init() {
     'use strict';
+    clock = new THREE.Clock(true);
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
@@ -440,24 +463,8 @@ function init() {
 /////////////////////
 function animate() {
     'use strict';
-
-    if(checkOptimusBuilt() && checkCollisions() && !freeCollisions) {
-        handleCollisions();
-    }
-    else {
-        if(!checkOptimusBuilt() || !checkCollisions())
-            freeCollisions = false;
-
-        moveAtrelado();
-   
-        moveFeet();
-
-        moveLegs();
-
-        moveArms();
-
-        moveHead();
-    }
+    update();
+    
     render(currentCam);
 
     requestAnimationFrame(animate);
