@@ -2,7 +2,7 @@
 /* GLOBAL VARIABLES */
 //////////////////////
 
-var scene, cameras = [], renderer, currentCam;
+var scene, cameras = [], renderer, currentCam, groundMesh;
 
 var geometry, material, mesh;
 
@@ -22,7 +22,6 @@ function createScene(){
     scene = new THREE.Scene();
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
-    createSkydome();
     
 }
 
@@ -90,6 +89,25 @@ function createSkydome() {
     scene.add(sky);
 }
 
+function createGround() {
+    var groundGeo = new THREE.PlaneGeometry(1000, 1000, 100, 100);
+
+    const textureLoader = new THREE.TextureLoader();
+    const texture = textureLoader.load("js/heightmap.png");
+
+    const material = new THREE.MeshStandardMaterial( { color: black,
+           wireframe: true,
+           displacementMap: texture,
+           displacementScale: 500
+    } );
+
+    groundMesh = new THREE.Mesh(groundGeo, material);
+    groundMesh.rotation.x = -Math.PI / 2;
+    groundMesh.rotation.z = -Math.PI / 4;
+    groundMesh.position.y = 100;
+    scene.add(groundMesh)
+}
+
 //////////////////////
 /* CHECK COLLISIONS */
 //////////////////////
@@ -136,9 +154,12 @@ function init() {
 
 
     createScene();
-    createPerspectiveCamera(1000, 1000, 1000);    //perspetiva isométrica (projeção perspetiva)
+    createPerspectiveCamera(500, 500, 500);    //perspetiva isométrica (projeção perspetiva)
     render(cameras[0]);
 
+
+    createGround();
+    //createSkydome();
 
 }
 
@@ -161,10 +182,8 @@ function onResize() {
     'use strict';
     renderer.setSize(window.innerWidth, window.innerHeight);
     if (window.innerHeight > 0 && window.innerWidth > 0) {
-        for (let i = 0; i < 5; i++) {
-            cameras[0].aspect = window.innerWidth / window.innerHeight;
-            cameras[0].updateProjectionMatrix();
-        }
+        cameras[0].aspect = window.innerWidth / window.innerHeight;
+        cameras[0].updateProjectionMatrix();
     }
     render(currentCam);
 }
