@@ -79,18 +79,18 @@ function createCone(obj, x, y, z, radius, height, color) {
 }
 
 function createSkydome() {
-    geometry = new THREE.SphereGeometry(1000, 80, 32);
+    geometry = new THREE.SphereGeometry(250, 80, 32);
     const textureLoader = new THREE.TextureLoader();
     //Estou a usar uma imagem random mas quando tiveremos as texturas feitas a do céu estrelado coloca-se aqui\\
     const texture = textureLoader.load("js/2823368.jpg");
-    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide});
     sky = new THREE.Mesh(geometry, material);
     sky.position.set(0,0,0);
     scene.add(sky);
 }
 
 function createGround() {
-    var groundGeo = new THREE.PlaneGeometry(1000, 1000, 100, 100);
+    var groundGeo = new THREE.PlaneGeometry(250, 250, 25, 25);
 
     const textureLoader = new THREE.TextureLoader();
     const texture = textureLoader.load("js/heightmap.png");
@@ -98,13 +98,13 @@ function createGround() {
     const material = new THREE.MeshStandardMaterial( { color: black,
            wireframe: true,
            displacementMap: texture,
-           displacementScale: 500
+           displacementScale: 125
     } );
 
     groundMesh = new THREE.Mesh(groundGeo, material);
     groundMesh.rotation.x = -Math.PI / 2;
     groundMesh.rotation.z = -Math.PI / 4;
-    groundMesh.position.y = 100;
+    groundMesh.position.y = 25;
     scene.add(groundMesh)
 }
 
@@ -154,13 +154,11 @@ function init() {
 
 
     createScene();
-    createPerspectiveCamera(500, 500, 500);    //perspetiva isométrica (projeção perspetiva)
+    createPerspectiveCamera(125, 125, 125);    //perspetiva isométrica (projeção perspetiva)
     render(cameras[0]);
 
-
     createGround();
-    //createSkydome();
-
+    createSkydome();
 }
 
 /////////////////////
