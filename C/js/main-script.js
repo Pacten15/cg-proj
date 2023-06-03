@@ -8,6 +8,8 @@ var geometry, material, mesh;
 
 var skyDomeGeo, skyDome;
 
+var sky;
+
 var loader, texture;
 
 var door, window1, window2, base, roof;
@@ -155,7 +157,7 @@ function createGround() {
     groundMesh.rotation.x = -Math.PI / 2;
     groundMesh.rotation.z = -Math.PI / 4;
     groundMesh.position.y = 25;
-    scene.add(groundMesh)
+    scene.add(groundMesh);
 }
 
 
@@ -167,7 +169,7 @@ function createHouse(x,y,z) {
 
     createRoof(house, x, y + 6, z, orange);
 
-    createWindows(house, x, y, z)
+    createWindows(house, x, y, z);
 
 
 }
