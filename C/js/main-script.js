@@ -10,9 +10,11 @@ var skyDomeGeo, skyDome;
 
 var loader, texture;
 
-
 // colors
 const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000;
+
+var controls;
+
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -40,6 +42,14 @@ function createPerspectiveCamera(x, y, z) {
 /////////////////////
 /* CREATE LIGHT(S) */
 /////////////////////
+
+function createLight() {
+    const light = new THREE.PointLight(color=0xffffff, intensity=1, distance=0, decay=2);
+    light.position.set(0, 100, 0);
+    scene.add( light );
+    const pointLightHelper = new THREE.PointLightHelper( light, 1 );
+    scene.add( pointLightHelper );
+}
 
 ////////////////////////
 /* CREATE OBJECT3D(S) */
@@ -94,11 +104,15 @@ function createGround() {
 
     const textureLoader = new THREE.TextureLoader();
     const texture = textureLoader.load("js/heightmap.png");
+    const green   = textureLoader.load("js/ground.png");
 
-    const material = new THREE.MeshStandardMaterial( { color: black,
-           wireframe: true,
+    const material = new THREE.MeshStandardMaterial( {
+           //color: blue,
+           wireframe: false,
            displacementMap: texture,
-           displacementScale: 125
+           displacementScale: 125,
+           map: green,
+           side: THREE.DoubleSide
     } );
 
     groundMesh = new THREE.Mesh(groundGeo, material);
@@ -128,9 +142,8 @@ function handleCollisions(){
 /* UPDATE */
 ////////////
 function update(){
-
     'use strict';
-
+    controls.update()
 }
 
 
@@ -155,10 +168,14 @@ function init() {
 
     createScene();
     createPerspectiveCamera(125, 125, 125);    //perspetiva isométrica (projeção perspetiva)
+    createLight();
+
     render(cameras[0]);
 
     createGround();
     createSkydome();
+
+    controls = new THREE.OrbitControls(currentCam, renderer.domElement);
 }
 
 /////////////////////
