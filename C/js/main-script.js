@@ -10,11 +10,13 @@ var skyDomeGeo, skyDome;
 
 var loader, texture;
 
-// colors
-const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000;
+var door, window1, window2, base, roof;
 
 var controls;
 
+
+// colors
+const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000, white = 0xF8F8FF, orange = 0xF5761A;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -88,7 +90,40 @@ function createCone(obj, x, y, z, radius, height, color) {
     return mesh;
 }
 
+function createSphere(obj, x, y, z, radius, width, height, color) {
+    'use strict' ;
+    material = new THREE.MeshBasicMaterial({ color: color});
+    geometry = new THREE.SphereGeometry(radius, width, height);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+    return mesh;
+}
+
+function createRoof(obj, x, y, z, radius, color) {
+    'use strict' ;
+    material = new THREE.MeshBasicMaterial({ color: color});
+    geometry = new THREE.TetrahendronGeometry(radius, 0);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+    return mesh;
+}
+
+function createWindows(obj, x, y, z, width, height) {
+    'use strict' ;
+    material = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.8 });
+    geometry = new THREE.BoxGeometry(width, height, depth);
+    mesh = new THREE.Mesh(geometry, material)
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+    return mesh;
+}
+
+
+
 function createSkydome() {
+    'use strict' ;
     geometry = new THREE.SphereGeometry(250, 80, 32);
     const textureLoader = new THREE.TextureLoader();
     //Estou a usar uma imagem random mas quando tiveremos as texturas feitas a do céu estrelado coloca-se aqui\\
@@ -100,6 +135,7 @@ function createSkydome() {
 }
 
 function createGround() {
+    'use strict' ;
     var groundGeo = new THREE.PlaneGeometry(250, 250, 25, 25);
 
     const textureLoader = new THREE.TextureLoader();
@@ -120,6 +156,20 @@ function createGround() {
     groundMesh.rotation.z = -Math.PI / 4;
     groundMesh.position.y = 25;
     scene.add(groundMesh)
+}
+
+
+function createHouse(x,y,z) {
+    'use strict' ;
+    house = new THREE.Object3D();
+
+    createCube(house, x, y, z, 12, 6, 6, white);
+
+    createRoof(house, x, y + 6, z, orange);
+
+    createWindows(house, x, y, z)
+
+
 }
 
 //////////////////////
