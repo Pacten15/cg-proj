@@ -16,9 +16,14 @@ var door, window1, window2, base, roof;
 
 var controls;
 
+var moon, globalLight, ambientLight;
+
 
 // colors
-const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000, white = 0xF8F8FF, orange = 0xF5761A;
+const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000, white = 0xF8F8FF, orange = 0xF5761A, moonYellow = 0xEBC815;
+
+var canSwitchLight = false;
+
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -34,7 +39,6 @@ function createScene(){
 //////////////////////
 /* CREATE CAMERA(S) */
 //////////////////////
-
 function createPerspectiveCamera(x, y, z) {
     'use strict';
     var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
@@ -47,18 +51,34 @@ function createPerspectiveCamera(x, y, z) {
 /* CREATE LIGHT(S) */
 /////////////////////
 
-function createLight() {
-    const light = new THREE.PointLight(color=0xffffff, intensity=1, distance=0, decay=2);
-    light.position.set(0, 100, 0);
-    scene.add( light );
-    const pointLightHelper = new THREE.PointLightHelper( light, 1 );
-    scene.add( pointLightHelper );
+function createGlobalLight() {
+    globalLight = new THREE.DirectionalLight(moonYellow, 1);
+    globalLight.position.set(50, 100, 50);
+    globalLight.rotation.x += Math.PI/4;
+    scene.add(globalLight);
+    const lightHelper = new THREE.DirectionalLightHelper(globalLight, 1);
+    scene.add( lightHelper );
+}
+
+function createAmbientLight() {
+    ambientLight = new THREE.AmbientLight(moonYellow, intensity=0.5);
+    scene.add(ambientLight);
+}
+
+function switchLight() {
+    if (canSwitchLight) {
+        if (globalLight.color.getHex() == moonYellow) {
+            globalLight.color.set(black);
+        } else if (globalLight.color.getHex() == black) {
+            globalLight.color.set(moonYellow);
+        }
+        canSwitchLight = false;
+    }
 }
 
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
-
 
 function createCube(obj, x, y, z, width, height, depth, color) {
     'use strict';
@@ -122,20 +142,6 @@ function createWindows(obj, x, y, z, width, height) {
     return mesh;
 }
 
-
-
-function createSkydome() {
-    'use strict' ;
-    geometry = new THREE.SphereGeometry(250, 80, 32);
-    const textureLoader = new THREE.TextureLoader();
-    //Estou a usar uma imagem random mas quando tiveremos as texturas feitas a do céu estrelado coloca-se aqui\\
-    const texture = textureLoader.load("js/2823368.jpg");
-    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide});
-    sky = new THREE.Mesh(geometry, material);
-    sky.position.set(0,0,0);
-    scene.add(sky);
-}
-
 function createGround() {
     'use strict' ;
     var groundGeo = new THREE.PlaneGeometry(250, 250, 25, 25);
@@ -158,6 +164,27 @@ function createGround() {
     groundMesh.rotation.z = -Math.PI / 4;
     groundMesh.position.y = 25;
     scene.add(groundMesh);
+}
+
+function createMoon() {
+    'use strict';20, 100, 20, 10
+    material = new THREE.MeshPhongMaterial({ emissive: moonYellow });
+    geometry = new THREE.SphereGeometry(10);
+    moon = new THREE.Mesh(geometry, material);
+    moon.position.set(20, 100, 20);
+    scene.add(moon);
+}
+
+function createSkydome() {
+    'use strict' ;
+    geometry = new THREE.SphereGeometry(250, 80, 32);
+    const textureLoader = new THREE.TextureLoader();
+    //Estou a usar uma imagem random mas quando tiveremos as texturas feitas a do céu estrelado coloca-se aqui\\
+    const texture = textureLoader.load("js/2823368.jpg");
+    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide});
+    sky = new THREE.Mesh(geometry, material);
+    sky.position.set(0,0,0);
+    scene.add(sky);
 }
 
 
@@ -196,6 +223,7 @@ function handleCollisions(){
 function update(){
     'use strict';
     controls.update()
+    switchLight();
 }
 
 
@@ -219,8 +247,12 @@ function init() {
 
 
     createScene();
-    createPerspectiveCamera(125, 125, 125);    //perspetiva isométrica (projeção perspetiva)
-    createLight();
+    createGround();
+    createMoon();
+    createSkydome();
+    createGlobalLight();
+    createAmbientLight();
+    createPerspectiveCamera(125, 125, 125); 
 
     render(cameras[0]);
 
@@ -228,6 +260,10 @@ function init() {
     createSkydome();
 
     controls = new THREE.OrbitControls(currentCam, renderer.domElement);
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("resize", onResize);
 }
 
 /////////////////////
@@ -260,7 +296,11 @@ function onResize() {
 ///////////////////////
 function onKeyDown(e) {
     'use strict';
-
+    switch (e.keyCode) {
+        case 68: // letter D
+            canSwitchLight = true;
+            break;
+    }
 }
 
 ///////////////////////
@@ -268,5 +308,9 @@ function onKeyDown(e) {
 ///////////////////////
 function onKeyUp(e){
     'use strict';
-
+    switch (e.keyCode) {
+        case 68: // letter D
+            canSwitchLight = false;
+            break;
+    }
 }
