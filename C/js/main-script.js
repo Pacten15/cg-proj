@@ -20,7 +20,7 @@ var moon, globalLight, ambientLight;
 
 
 // colors
-const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000, white = 0xF8F8FF, orange = 0xF5761A, moonYellow = 0xEBC815;
+const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000, white = 0xF8F8FF, orange = 0xF5761A, moonYellow = 0xEBC815, light_blue = 0x6495ED;
 
 var canSwitchLight = false;
 
@@ -33,6 +33,7 @@ function createScene(){
     scene = new THREE.Scene();
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
+    createHouse(4,19,0);
     
 }
 
@@ -122,17 +123,43 @@ function createSphere(obj, x, y, z, radius, width, height, color) {
     return mesh;
 }
 
-function createRoof(obj, x, y, z, radius, color) {
-    'use strict' ;
-    material = new THREE.MeshBasicMaterial({ color: color});
-    geometry = new THREE.TetrahendronGeometry(radius, 0);
+function createRoof(obj, x, y, z, width, height, color) {
+    'use strict';
+    material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+    geometry = new THREE.BufferGeometry();
+
+    // Define the vertices of the pyramid
+    var vertices = new Float32Array ([
+        x, y + height, z,                            // Vertex 0 (apex)
+        x - width , y, z - width / 2,             // Vertex 1
+        x + width , y, z - width / 2,             // Vertex 2
+        x + width , y, z + width / 2,             // Vertex 3
+        x - width , y, z + width / 2              // Vertex 4
+    ]);
+
+    // Define the faces (triangles) by specifying the indices of the vertices
+    var indices = [
+        0, 1, 2,    // Triangle 1 (apex, v1, v2)
+        0, 2, 3,    // Triangle 2 (apex, v2, v3)
+        0, 3, 4,    // Triangle 3 (apex, v3, v4)
+        0, 4, 1,    // Triangle 4 (apex, v4, v1)
+        1, 2, 3,    // Triangle 5 (v1, v2, v3)
+        1, 3, 4     // Triangle 6 (v1, v3, v4)
+    ];
+
+    // Set the vertices and indices of the geometry
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(indices);
+
+    // Compute vertex normals for proper shading
+    geometry.computeVertexNormals();
+
     mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, z);
     obj.add(mesh);
     return mesh;
 }
 
-function createWindows(obj, x, y, z, width, height) {
+function createWindow(obj, x, y, z, width, height, depth, color) {
     'use strict' ;
     material = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.8 });
     geometry = new THREE.BoxGeometry(width, height, depth);
@@ -141,6 +168,20 @@ function createWindows(obj, x, y, z, width, height) {
     obj.add(mesh);
     return mesh;
 }
+
+function createDoor(obj, x, y, z, width, height, depth) {
+    'use strict' ;
+    var door = new THREE.Object3D();
+
+    createCube(door, x, y, z, width, height, depth, light_blue);
+
+    createSphere(door, x+0.8, y, z+0.3, 0.3, 80, 32, white);
+
+    obj.add(door);
+    return mesh;
+    
+}
+
 
 function createGround() {
     'use strict' ;
@@ -166,6 +207,20 @@ function createGround() {
     scene.add(groundMesh);
 }
 
+
+function createDoor(obj, x, y, z, width, height, depth) {
+    'use strict' ;
+    var door = new THREE.Object3D();
+
+    createCube(door, x, y, z, width, height, depth, light_blue);
+
+    createSphere(door, x+0.8, y, z+0.3, 0.3, 80, 32, white);
+
+    obj.add(door);
+    return mesh;
+    
+}
+
 function createMoon() {
     'use strict';20, 100, 20, 10
     material = new THREE.MeshPhongMaterial({ emissive: moonYellow });
@@ -187,19 +242,25 @@ function createSkydome() {
     scene.add(sky);
 }
 
-
 function createHouse(x,y,z) {
     'use strict' ;
-    house = new THREE.Object3D();
+    var house = new THREE.Object3D();
 
-    createCube(house, x, y, z, 12, 6, 6, white);
+    createCube(house, x, y, z, 24, 12, 12, white);
 
-    createRoof(house, x, y + 6, z, orange);
+    createRoof(house, x, y + 6, z, 12, 8 ,orange);
 
-    createWindows(house, x, y, z);
+    createWindow(house, x+8, y+2, z + 6, 4, 4, 0.1, light_blue);
+
+    createWindow(house, x-8, y+2, z + 6, 4, 4, 0.1, light_blue);
+
+    createDoor(house, x, y-3, z + 6, 4, 6, 0.1, light_blue);
 
 
+    scene.add(house);
+    house.position.set(x, y, z);
 }
+
 
 //////////////////////
 /* CHECK COLLISIONS */
