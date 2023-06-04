@@ -18,9 +18,11 @@ var controls;
 
 var moon, globalLight, ambientLight;
 
+var tree1, tree2, tree3, tree4, tree5;
+
 
 // colors
-const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000, white = 0xF8F8FF, orange = 0xF5761A, moonYellow = 0xEBC815, light_blue = 0x6495ED;
+const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000, white = 0xF8F8FF, orange = 0xF5761A, moonYellow = 0xEBC815, light_blue = 0x6495ED, orange_brown = 0xC5761A, green = 0x006400;
 
 var canSwitchLight = false;
 
@@ -93,11 +95,9 @@ function createCube(obj, x, y, z, width, height, depth, color) {
 
 function createCylinder(obj, x, y, z) {
     'use strict';
-    material = new THREE.MeshBasicMaterial({ color: black, wireframe: false });
-    geometry = new THREE.CylinderGeometry(wheelRadius, wheelRadius, wheelHeight,32);
+    material = new THREE.MeshBasicMaterial({ color: orange_brown, wireframe: false });
+    geometry = new THREE.CylinderGeometry(2, 2, 12, 32);
     mesh = new THREE.Mesh(geometry, material);
-    mesh.rotation.x = Math.PI/2;
-    mesh.rotation.z = Math.PI/2;
     mesh.position.set(x, y, z);
     obj.add(mesh);
     return mesh;
@@ -261,6 +261,52 @@ function createHouse(x,y,z) {
     house.position.set(x, y, z);
 }
 
+function createTree(x,y,z) {
+    'use strict' ;
+    
+    var tree = new THREE.Object3D()
+
+    createCylinder(tree, x, y, z);
+
+    material = new THREE.MeshBasicMaterial({ color: green, wireframe: false } );
+    geometry = new THREE.SphereGeometry(2, 32, 16);
+    geometry.scale(2, 1, 1);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y + 8, z);
+    tree.add(mesh);
+
+
+    scene.add(tree);
+    tree.position.set(x, y, z);
+    return tree;
+}
+
+function createBranch(obj) {
+    'use strict' ;
+    
+    var branch = new THREE.Object3D();
+
+
+    material = new THREE.MeshBasicMaterial({ color: orange_brown, wireframe: false });
+    geometry = new THREE.CylinderGeometry(0.5, 0.5, 4, 32);
+    mesh = new THREE.Mesh(geometry, material);
+    branch.add(mesh);
+
+    material = new THREE.MeshBasicMaterial({ color: green, wireframe: false } );
+    geometry = new THREE.SphereGeometry(0.5, 32, 16);
+    geometry.scale(2, 1, 1);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(0, 2.5, 0);
+    branch.add(mesh);
+    branch.rotation.z += Math.PI / 4;
+
+    branch.position.set(obj.position.x - 3, obj.position.y + 3, obj.position.z);
+
+
+
+    obj.add(branch);
+}
+
 
 //////////////////////
 /* CHECK COLLISIONS */
@@ -313,12 +359,18 @@ function init() {
     createSkydome();
     createGlobalLight();
     createAmbientLight();
+    tree1 = createTree(0, 15.5, 80);
+    tree2 = createTree(10, 15.5, 65);
+    tree3 = createTree(-20, 15.5, 45);
+    createBranch(tree3);
+    tree4 = createTree(-10, 15.5, 40);
+    tree5 = createTree(10, 25, 10);
+
+    createBranch(tree5);
+
     createPerspectiveCamera(125, 125, 125); 
 
     render(cameras[0]);
-
-    createGround();
-    createSkydome();
 
     controls = new THREE.OrbitControls(currentCam, renderer.domElement);
 
