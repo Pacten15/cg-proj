@@ -53,7 +53,7 @@ function createScene(){
     scene = new THREE.Scene();
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
-    createHouse(4,19,0);
+    createHouse(0,15.55,30);
     
 }
 
@@ -160,6 +160,8 @@ function createCylinder(obj, x, y, z) {
     material = new THREE.MeshBasicMaterial({ color: orange_brown, wireframe: false });
     geometry = new THREE.CylinderGeometry(2, 2, 12, 32);
     mesh = new THREE.Mesh(geometry, material);
+    mesh.rotation.x = Math.PI;
+    mesh.rotation.z = Math.PI;
     mesh.position.set(x, y, z);
     obj.add(mesh);
     return mesh;
@@ -208,6 +210,126 @@ function createCoolSphere(obj, color, x, y, z, radius, widthSegments, heightSegm
     return mesh;
 }
 
+
+function createHouseWallBack(obj, x, y, z, width, height, color) {
+    'use strict';
+    material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+    geometry = new THREE.BufferGeometry();
+
+    var vertices = new Float32Array ([
+        0, 0, 0,                       // Vertex 1
+        0, height, 0,                  // Vertex 2
+        width , 0, 0,                  // Vertex 3
+        width , height, 0             // Vertex 4
+    ]);
+
+
+    var indices = [
+        0, 1, 2,
+        2, 3, 1
+    ];
+    
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(indices);
+
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x-12,y-6,z-6);
+    obj.add(mesh);
+    return mesh;
+
+}
+
+
+function createHouseWallSide(obj, x, y, z, width, height, color) {
+    'use strict';
+    material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+    geometry = new THREE.BufferGeometry();
+
+    var vertices = new Float32Array ([
+        0, 0, 0,                       // Vertex 0
+        0, height/2, 0,                // Vertex 1
+        0, 0, width,                   // Vertex 2
+        0, height/2, width             // Vertex 3
+    ]);
+
+
+    var indices = [
+        0, 1, 2,
+        2, 3, 1
+    ];
+    
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(indices);
+
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x-12,y-6,z-6);
+    mesh.rotation.set(Math.PI/2, Math.PI, 0);
+    obj.add(mesh);
+    return mesh;
+}
+
+function createHouseFront(obj, x, y, z, width, height, color) {
+    'use strict';
+    material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+    geometry = new THREE.BufferGeometry();
+
+    var vertices = new Float32Array ([
+        0, 0, 0,                                // Vertex 0
+        0, height, 0,                           // Vertex 1
+        width , 0, 0,                           // Vertex 2
+        width , height, 0,                      // Vertex 3
+        0, (2/3)*height, 0,                     // Vertex 4
+        width, (2/3)*height,0,                  // Vertex 5
+        0, (1/3)*height, 0,                     // Vertex 6
+        (1/12)*width, (1/3)*height, 0,          // Vertex 7
+        (1/12)*width, (2/3)*height, 0,          // Vertex 8
+        width-14, (1/3)*height, 0,              // Vertex 9
+        width-14, 0, 0,                         // Vertex 10
+        (1/4)*width, (1/3)*height, 0,           // Vertex 11
+        (1/4)*width, (2/3)*height, 0,           // Vertex 12
+        width-14, (1/3)*height, 0,              // Vertex 13
+        width-14, (2/3)*height, 0,              // Vertex 14
+        width-10, (2/3)*height, 0,              // Vertex 15
+        width-10, (1/3)*height, 0,              // Vertex 16
+        width-6,  (2/3)*height, 0,              // Vertex 17
+        width-6,  (1/3)*height, 0,              // Vertex 18
+        width-2,  (2/3)*height, 0,              // Vertex 19
+        width-2,  (1/3)*height, 0,              // Vertex 20
+        width,    (1/3)*height, 0,              // Vertex 21
+        width-10, 0, 0                          // Vertex 22
+ 
+    ]);
+
+
+    var indices = [
+        4, 1, 3,
+        3, 4, 5,
+        6, 4, 8,
+        8, 6, 7,
+        0, 6, 9,
+        9, 0, 10,
+        11, 12, 14,
+        14, 11, 13,
+        22, 16, 21,
+        21, 22, 2,
+        16, 15, 17,
+        17, 16, 18,
+        20, 19, 5,
+        5, 20, 21
+
+    ];
+    
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(indices);
+
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x-12,y-6,z+6);
+    obj.add(mesh);
+    return mesh;
+
+}
+
+
 function createRoof(obj, x, y, z, width, height, color) {
     'use strict';
     material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
@@ -215,7 +337,7 @@ function createRoof(obj, x, y, z, width, height, color) {
 
     // Define the vertices of the pyramid
     var vertices = new Float32Array ([
-        x, y + height, z,                            // Vertex 0 (apex)
+        x, y + height, z,                          // Vertex 0 (apex)
         x - width , y, z - width / 2,             // Vertex 1
         x + width , y, z - width / 2,             // Vertex 2
         x + width , y, z + width / 2,             // Vertex 3
@@ -244,28 +366,73 @@ function createRoof(obj, x, y, z, width, height, color) {
     return mesh;
 }
 
-function createWindow(obj, x, y, z, width, height, depth, color) {
-    'use strict' ;
-    material = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.8 });
-    geometry = new THREE.BoxGeometry(width, height, depth);
-    mesh = new THREE.Mesh(geometry, material)
-    mesh.position.set(x, y, z);
+function createWindows(obj, x, y, z, width, height, color) {
+    'use strict';
+    material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+    geometry = new THREE.BufferGeometry();
+
+    var vertices = new Float32Array ([
+        (1/12)*width, (1/3)*height, 0,          // Vertex 0
+        (1/12)*width, (2/3)*height, 0,          // Vertex 1
+        (1/4)*width, (1/3)*height, 0,           // Vertex 2
+        (1/4)*width, (2/3)*height, 0,           // Vertex 3
+        width-2,  (2/3)*height, 0,              // Vertex 4
+        width-2,  (1/3)*height, 0,              // Vertex 5
+        width-6,  (2/3)*height, 0,              // Vertex 6
+        width-6,  (1/3)*height, 0,              // Vertex 7       
+    ]);
+
+
+    var indices = [
+        0, 1, 3,
+        3, 0, 2,
+        7, 6, 4,
+        4, 7, 5
+
+    ];
+    
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(indices);
+
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x-12,y-6,z+6);
     obj.add(mesh);
-    return mesh;
+    return mesh;  
 }
 
-function createDoor(obj, x, y, z, width, height, depth) {
+function createDoor(obj, x, y, z, width, height) {
     'use strict' ;
     var door = new THREE.Object3D();
 
-    mesh = createCube(door, x, y, z, width, height, depth, lightBlue);
-    materialDoor = new THREE.MeshBasicMaterial({ color: lightBlue, wireframe: false });
-    createSphere(door, x+0.8, y, z+0.3, 0.3, 80, 32, white);
+    'use strict';
+    material = new THREE.MeshBasicMaterial({ color: lightBlue, side: THREE.DoubleSide });
+    geometry = new THREE.BufferGeometry();
 
+    var vertices = new Float32Array ([
+        width-14, 0, 0,                         // Vertex 0
+        width-14, (2/3)*height, 0,              // Vertex 1
+        width-10, 0, 0,                         // Vertex 2
+        width-10, (2/3)*height, 0,              // Vertex 3    
+    ]);
+
+
+    var indices = [
+        0, 1, 3,
+        3, 0, 2
+    ];
+    
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(indices);
+
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x-12,y-6,z+6);
+    door.add(mesh);
+    createSphere(door, x+1, y-1.4, z+6.3, 0.3, 80, 32, white);
     obj.add(door);
     return mesh;
     
 }
+
 
 function createGround() {
     'use strict' ;
@@ -297,6 +464,7 @@ function createMoon() {
     geometry = new THREE.SphereGeometry(10);
     moon = new THREE.Mesh(geometry, material);
     moon.position.set(20, 100, 20);
+    moon.scale.set(2,2,2);
     scene.add(moon);
 }
 
@@ -316,15 +484,19 @@ function createHouse(x,y,z) {
     'use strict' ;
     var house = new THREE.Object3D();
 
-    createCube(house, x, y, z, 24, 12, 12, white);
+    createHouseWallBack(house, x, y, z, 24, 12, white);
+
+    createHouseWallSide(house , x, y, z, 12, 24, white);
+
+    createHouseWallSide(house , x+24, y, z, 12, 24, white);
+
+    createHouseFront(house, x, y, z, 24, 12, white);
+
+    createWindows(house, x, y, z, 24, 12, lightBlue);
+
+    createDoor(house, x, y, z, 24, 12);
 
     createRoof(house, x, y + 6, z, 12, 8 ,orange);
-
-    createWindow(house, x+8, y+2, z + 6, 4, 4, 0.1, lightBlue);
-
-    createWindow(house, x-8, y+2, z + 6, 4, 4, 0.1, lightBlue);
-
-    meshDoor = createDoor(house, x, y-3, z + 6, 4, 6, 0.1, lightBlue);
 
 
     scene.add(house);
@@ -389,9 +561,11 @@ function createUFO() {
     ufoSpotLight = createSpotLight(ufo);
 
     ufo.position.set(0, 75, 75);
+    ufo.scale.set(2,2,2);
     scene.add(ufo);
 
 }
+
 
 //////////////////////
 /* CHECK COLLISIONS */
@@ -482,10 +656,12 @@ function init() {
     tree4.rotation.y += Math.PI/4;
     tree5 = createTree(10, 15.5, 10);
 
-    
     createPerspectiveCamera(125, 125, 125); 
 
     render(cameras[0]);
+
+    createGround();
+    createSkydome();
 
     controls = new THREE.OrbitControls(currentCam, renderer.domElement);
 
@@ -545,12 +721,26 @@ function onKeyDown(e) {
             break;
         case 83: // letter S
             canSwitchUFOSpotLight = true;
-            break;
-        case 81:  //Q
-        case 113: //q
-            meshDoor.material = lambertMaterial;
-            break;
-        case 82:  //R
+            break;function onKeyDown(e) {
+                'use strict';
+                switch (e.keyCode) {
+                    case 68: // letter D
+                        canSwitchLight = true;
+                        break;
+                }
+            }
+            
+            ///////////////////////
+            /* KEY UP CALLBACK */
+            ///////////////////////
+            function onKeyUp(e){
+                'use strict';
+                switch (e.keyCode) {
+                    case 68: // letter D
+                        canSwitchLight = false;
+                        break;
+                }
+            }
         case 114: //r
             meshDoor.material = materialDoor;
             break;
