@@ -18,7 +18,12 @@ var controls;
 
 var moon, globalLight, ambientLight;
 
-var tree1, tree2, tree3, tree4, tree5;
+var tree1, tree2, tree3, tree4, tree5, meshDoor, materialDoor;
+
+
+const lambertMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+const phongMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+const toonMaterial = new THREE.MeshToonMaterial({ color: 0x0000ff });
 
 
 // colors
@@ -173,8 +178,8 @@ function createDoor(obj, x, y, z, width, height, depth) {
     'use strict' ;
     var door = new THREE.Object3D();
 
-    createCube(door, x, y, z, width, height, depth, light_blue);
-
+    mesh = createCube(door, x, y, z, width, height, depth, light_blue);
+    materialDoor = new THREE.MeshBasicMaterial({ color: light_blue, wireframe: false });
     createSphere(door, x+0.8, y, z+0.3, 0.3, 80, 32, white);
 
     obj.add(door);
@@ -195,7 +200,7 @@ function createGround() {
            //color: blue,
            wireframe: false,
            displacementMap: texture,
-           displacementScale: 125,
+           displacementScale: 80,
            map: green,
            side: THREE.DoubleSide
     } );
@@ -205,20 +210,6 @@ function createGround() {
     groundMesh.rotation.z = -Math.PI / 4;
     groundMesh.position.y = 25;
     scene.add(groundMesh);
-}
-
-
-function createDoor(obj, x, y, z, width, height, depth) {
-    'use strict' ;
-    var door = new THREE.Object3D();
-
-    createCube(door, x, y, z, width, height, depth, light_blue);
-
-    createSphere(door, x+0.8, y, z+0.3, 0.3, 80, 32, white);
-
-    obj.add(door);
-    return mesh;
-    
 }
 
 function createMoon() {
@@ -254,7 +245,7 @@ function createHouse(x,y,z) {
 
     createWindow(house, x-8, y+2, z + 6, 4, 4, 0.1, light_blue);
 
-    createDoor(house, x, y-3, z + 6, 4, 6, 0.1, light_blue);
+    meshDoor = createDoor(house, x, y-3, z + 6, 4, 6, 0.1, light_blue);
 
 
     scene.add(house);
@@ -269,44 +260,31 @@ function createTree(x,y,z) {
     createCylinder(tree, x, y, z);
 
     material = new THREE.MeshBasicMaterial({ color: green, wireframe: false } );
-    geometry = new THREE.SphereGeometry(2, 32, 16);
+    geometry = new THREE.SphereGeometry(3, 32, 16);
     geometry.scale(2, 1, 1);
     mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y + 8, z);
+    mesh.position.set(x, y + 8.5, z);
     tree.add(mesh);
-
-
-    scene.add(tree);
-    tree.position.set(x, y, z);
-    return tree;
-}
-
-function createBranch(obj) {
-    'use strict' ;
     
-    var branch = new THREE.Object3D();
-
-
     material = new THREE.MeshBasicMaterial({ color: orange_brown, wireframe: false });
     geometry = new THREE.CylinderGeometry(0.5, 0.5, 4, 32);
     mesh = new THREE.Mesh(geometry, material);
-    branch.add(mesh);
+    mesh.position.set(x - 3, y + 3, z);
+    mesh.rotation.z += Math.PI / 4;
+    tree.add(mesh);
 
     material = new THREE.MeshBasicMaterial({ color: green, wireframe: false } );
     geometry = new THREE.SphereGeometry(0.5, 32, 16);
     geometry.scale(2, 1, 1);
     mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(0, 2.5, 0);
-    branch.add(mesh);
-    branch.rotation.z += Math.PI / 4;
+    mesh.position.set(x - 4.7, y + 4.7, z);
+    mesh.rotation.z += Math.PI / 4;
+    tree.add(mesh);
 
-    branch.position.set(obj.position.x - 3, obj.position.y + 3, obj.position.z);
-
-
-
-    obj.add(branch);
+    scene.add(tree);
+    tree.position.set(x, y, z);
+    return tree;
 }
-
 
 //////////////////////
 /* CHECK COLLISIONS */
@@ -359,15 +337,19 @@ function init() {
     createSkydome();
     createGlobalLight();
     createAmbientLight();
-    tree1 = createTree(0, 15.5, 80);
+    tree1 = createTree(0, 15.5, 0);
+    tree1.rotation.y += Math.PI;
+    tree1.position.set(70, 15.5, 70);
     tree2 = createTree(10, 15.5, 65);
-    tree3 = createTree(-20, 15.5, 45);
-    createBranch(tree3);
-    tree4 = createTree(-10, 15.5, 40);
-    tree5 = createTree(10, 25, 10);
+    tree3 = createTree(0, 15.5, 0);
+    tree3.rotation.y += Math.PI;
+    tree3.position.set(-20, 15.5, 90);
+    tree4 = createTree(-10, 13.5, 40);
+    tree4.rotation.z -= Math.PI/6;
+    tree4.rotation.y += Math.PI/4;
+    tree5 = createTree(10, 15.5, 10);
 
-    createBranch(tree5);
-
+    
     createPerspectiveCamera(125, 125, 125); 
 
     render(cameras[0]);
@@ -412,6 +394,22 @@ function onKeyDown(e) {
     switch (e.keyCode) {
         case 68: // letter D
             canSwitchLight = true;
+            break;
+        case 81:  //Q
+        case 113: //q
+            meshDoor.material = lambertMaterial;
+            break;
+        case 82:  //R
+        case 114: //r
+            meshDoor.material = materialDoor;
+            break;
+        case 87:  //W
+        case 119: //w
+            meshDoor.material = phongMaterial;
+            break;
+        case 69:  //E
+        case 101: //e
+            meshDoor.material = toonMaterial;
             break;
     }
 }
