@@ -20,6 +20,12 @@ var moon, globalLight, ambientLight;
 
 var tree1, tree2, tree3, tree4, tree5, meshDoor, materialDoor;
 
+var ufo;
+var ufoPointLights = [];
+var ufoSpotLight;
+var ufoLightBalls = [];
+var ufoFlatCylinder;
+
 
 const lambertMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
 const phongMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
@@ -27,9 +33,16 @@ const toonMaterial = new THREE.MeshToonMaterial({ color: 0x0000ff });
 
 
 // colors
-const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000, white = 0xF8F8FF, orange = 0xF5761A, moonYellow = 0xEBC815, light_blue = 0x6495ED, orange_brown = 0xC5761A, green = 0x006400;
+const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000, white = 0xF8F8FF, orange = 0xF5761A, moonYellow = 0xEBC815, lightBlue = 0x6495ED, orange_brown = 0xC5761A, green = 0x006400;
 
-var canSwitchLight = false;
+var canSwitchGlobalLight = false;
+var canSwitchUFOPointLights = false;
+var canSwitchUFOSpotLight = false;
+
+var leftArrow = false;
+var rightArrow = false;
+var upArrow = false;
+var downArrow = false;
 
 
 /////////////////////
@@ -73,15 +86,59 @@ function createAmbientLight() {
     scene.add(ambientLight);
 }
 
-function switchLight() {
-    if (canSwitchLight) {
-        if (globalLight.color.getHex() == moonYellow) {
-            globalLight.color.set(black);
-        } else if (globalLight.color.getHex() == black) {
-            globalLight.color.set(moonYellow);
+function switchLights() {
+
+    if (canSwitchGlobalLight) {
+        switchIt(globalLight, moonYellow)
+        canSwitchGlobalLight = false;
+    } else if (canSwitchUFOPointLights) {
+        for (const pointLight of ufoPointLights) {
+            switchIt(pointLight, white);
         }
-        canSwitchLight = false;
+        for (const lightBall of ufoLightBalls) {
+            switchEmmissive(lightBall, white);
+        }
+        canSwitchUFOPointLights = false;
+    } else if (canSwitchUFOSpotLight) {
+        switchIt(ufoSpotLight, white);
+        switchEmmissive(ufoFlatCylinder, gray);
+        canSwitchUFOSpotLight = false;
     }
+
+    function switchIt(light, onColor) {
+        if (light.color.getHex() == onColor) {
+            light.color.set(black);
+        } else if (light.color.getHex() == black) {
+            light.color.set(onColor);
+        }
+    }
+
+    function switchEmmissive(mesh, emmissionColor) {
+        if (mesh.material.emissive.getHex() == emmissionColor) {
+            mesh.material.emissive.set(black);
+        } else if (mesh.material.emissive.getHex() == black) {
+            mesh.material.emissive.set(emmissionColor);
+        }
+    }
+}
+
+function createSpotLight(obj) {
+    const spotLight = new THREE.SpotLight( white, 1, 100, Math.PI/6, 0);
+    //spotLight.position.set( 10, 100, 10 );
+    //scene.add(spotLight)
+    obj.add(spotLight);
+    obj.add(spotLight.target);
+    //const spotLightHelper = new THREE.SpotLightHelper( spotLight );
+    //scene.add(spotLightHelper)
+    return spotLight;
+}
+
+function createPointLight(obj, x, y, z) {
+    const light = new THREE.PointLight(white, 1, 10);
+    light.position.set( x, y, z );
+    scene.add(light);
+    obj.add(light)
+    return light;
 }
 
 ////////////////////////
@@ -108,6 +165,16 @@ function createCylinder(obj, x, y, z) {
     return mesh;
 }
 
+function createCoolCylinder(obj) {
+    'use strict';
+    material = new THREE.MeshPhongMaterial({ emissive: gray });
+    geometry = new THREE.CylinderGeometry(3, 3, .5, 32);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(0, -1/3, 0);
+    obj.add(mesh);
+    return mesh;
+}
+
 function createCone(obj, x, y, z, radius, height, color) {
     'use strict';
     material = new THREE.MeshBasicMaterial({ color: color, wireframe: false });
@@ -120,8 +187,21 @@ function createCone(obj, x, y, z, radius, height, color) {
 
 function createSphere(obj, x, y, z, radius, width, height, color) {
     'use strict' ;
-    material = new THREE.MeshBasicMaterial({ color: color});
+    material = new THREE.MeshBasicMaterial({ color: color });
     geometry = new THREE.SphereGeometry(radius, width, height);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+    return mesh;
+}
+
+function createCoolSphere(obj, color, x, y, z, radius, widthSegments, heightSegments, phiStart, phiLenght, thetaStart, spot) {
+    'use strict';
+    if (spot)
+        material = new THREE.MeshPhongMaterial({ color: color, emissive: white });
+    else
+        material = new THREE.MeshPhongMaterial({ color: color });
+    geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments, phiStart, phiLenght, thetaStart);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -178,15 +258,14 @@ function createDoor(obj, x, y, z, width, height, depth) {
     'use strict' ;
     var door = new THREE.Object3D();
 
-    mesh = createCube(door, x, y, z, width, height, depth, light_blue);
-    materialDoor = new THREE.MeshBasicMaterial({ color: light_blue, wireframe: false });
+    mesh = createCube(door, x, y, z, width, height, depth, lightBlue);
+    materialDoor = new THREE.MeshBasicMaterial({ color: lightBlue, wireframe: false });
     createSphere(door, x+0.8, y, z+0.3, 0.3, 80, 32, white);
 
     obj.add(door);
     return mesh;
     
 }
-
 
 function createGround() {
     'use strict' ;
@@ -241,11 +320,11 @@ function createHouse(x,y,z) {
 
     createRoof(house, x, y + 6, z, 12, 8 ,orange);
 
-    createWindow(house, x+8, y+2, z + 6, 4, 4, 0.1, light_blue);
+    createWindow(house, x+8, y+2, z + 6, 4, 4, 0.1, lightBlue);
 
-    createWindow(house, x-8, y+2, z + 6, 4, 4, 0.1, light_blue);
+    createWindow(house, x-8, y+2, z + 6, 4, 4, 0.1, lightBlue);
 
-    meshDoor = createDoor(house, x, y-3, z + 6, 4, 6, 0.1, light_blue);
+    meshDoor = createDoor(house, x, y-3, z + 6, 4, 6, 0.1, lightBlue);
 
 
     scene.add(house);
@@ -286,6 +365,34 @@ function createTree(x,y,z) {
     return tree;
 }
 
+function createUFO() {
+    'use strict'
+
+    ufo = new THREE.Object3D();
+
+    var body = createCoolSphere(ufo, white, 0, 0, 0, 6, undefined, undefined, undefined, undefined, undefined, false)
+    body.scale.set(1, 1/12, 1);
+
+    var cockpit = createCoolSphere(ufo, lightBlue, 0, 0, 0, 3, undefined, undefined, undefined, undefined, Math.PI/2, false);
+    cockpit.rotation.x += Math.PI;
+
+    var placer = new THREE.Vector3(6, 1/2, 0)
+    const div = 4
+    for (var i = 0; i < div; i++) {
+        placer.applyAxisAngle(new THREE.Vector3(0, 1, 0), 2 * Math.PI/div);
+        ufoLightBalls.push(createCoolSphere(ufo, lightBlue, placer.x, placer.y, placer.z, 1/2, undefined, undefined, undefined, undefined, undefined, true));
+        ufoPointLights.push(createPointLight(ufo, placer.x, placer.y, placer.z))
+    }
+
+    ufoFlatCylinder = createCoolCylinder(ufo);
+
+    ufoSpotLight = createSpotLight(ufo);
+
+    ufo.position.set(0, 75, 75);
+    scene.add(ufo);
+
+}
+
 //////////////////////
 /* CHECK COLLISIONS */
 //////////////////////
@@ -308,7 +415,32 @@ function handleCollisions(){
 function update(){
     'use strict';
     controls.update()
-    switchLight();
+    ufo.rotation.y += Math.PI/300
+    switchLights();
+    moveUFO();
+}
+
+function moveUFO() {
+    var speed = 1;
+    if (upArrow) {
+        ufo.position.z += speed;
+        if      (leftArrow)  ufo.position.x += speed;
+        else if (rightArrow) ufo.position.x -= speed;
+    } else if (downArrow) {
+        ufo.position.z -= speed;
+        if      (leftArrow)  ufo.position.x += speed;
+        else if (rightArrow) ufo.position.x -= speed;
+    } else if (leftArrow) {
+        ufo.position.x += speed;
+        if      (upArrow)   ufo.position.z += speed;
+        else if (downArrow) ufo.position.z -= speed;
+    } else if (rightArrow) {
+        ufo.position.x -= speed;
+        if      (upArrow)   ufo.position.z += speed;
+        else if (downArrow) ufo.position.z -= speed;
+    }
+
+
 }
 
 
@@ -335,6 +467,7 @@ function init() {
     createGround();
     createMoon();
     createSkydome();
+    createUFO();
     createGlobalLight();
     createAmbientLight();
     tree1 = createTree(0, 15.5, 0);
@@ -392,8 +525,26 @@ function onResize() {
 function onKeyDown(e) {
     'use strict';
     switch (e.keyCode) {
+        case 37: // left arrow
+            leftArrow = true;
+            break;
+        case 38: // up arrow
+            upArrow = true;
+            break;
+        case 39: // right arrow
+            rightArrow = true;
+            break;
+        case 40: // down arrow
+            downArrow = true;
+            break;
         case 68: // letter D
-            canSwitchLight = true;
+            canSwitchGlobalLight = true;
+            break;
+        case 80: // letter P
+            canSwitchUFOPointLights = true;
+            break;
+        case 83: // letter S
+            canSwitchUFOSpotLight = true;
             break;
         case 81:  //Q
         case 113: //q
@@ -420,8 +571,27 @@ function onKeyDown(e) {
 function onKeyUp(e){
     'use strict';
     switch (e.keyCode) {
-        case 68: // letter D
-            canSwitchLight = false;
+        case 37: // left arrow
+            leftArrow = false;
             break;
+        case 38: // up arrow
+            upArrow = false;
+            break;
+        case 39: // right arrow
+            rightArrow = false;
+            break;
+        case 40: // down arrow
+            downArrow = false;
+            break;
+        case 68: // letter D
+            canSwitchGlobalLight = false;
+            break;
+        case 80: // letter P
+            canSwitchUFOPointLights = false;
+            break;
+        case 83: // letter S
+            canSwitchUFOSpotLight = false;
+            break;
+    
     }
 }
