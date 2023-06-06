@@ -26,10 +26,7 @@ var ufoSpotLight;
 var ufoLightBalls = [];
 var ufoFlatCylinder;
 
-
-const lambertMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
-const phongMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
-const toonMaterial = new THREE.MeshToonMaterial({ color: 0x0000ff });
+var objects = [], colors = [];
 
 
 // colors
@@ -145,19 +142,9 @@ function createPointLight(obj, x, y, z) {
 /* CREATE OBJECT3D(S) */
 ////////////////////////
 
-function createCube(obj, x, y, z, width, height, depth, color) {
-    'use strict';
-    material = new THREE.MeshBasicMaterial({ color: color, wireframe: false });
-    geometry = new THREE.BoxGeometry(width, height, depth);
-    mesh = new THREE.Mesh(geometry, material)
-    mesh.position.set(x, y, z);
-    obj.add(mesh);
-    return mesh;
-}
-
 function createCylinder(obj, x, y, z) {
     'use strict';
-    material = new THREE.MeshBasicMaterial({ color: orange_brown, wireframe: false });
+    material = new THREE.MeshPhongMaterial({ color: orange_brown, wireframe: false });
     geometry = new THREE.CylinderGeometry(2, 2, 12, 32);
     mesh = new THREE.Mesh(geometry, material);
     mesh.rotation.x = Math.PI;
@@ -174,46 +161,42 @@ function createCoolCylinder(obj) {
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(0, -1/3, 0);
     obj.add(mesh);
-    return mesh;
-}
 
-function createCone(obj, x, y, z, radius, height, color) {
-    'use strict';
-    material = new THREE.MeshBasicMaterial({ color: color, wireframe: false });
-    geometry = new THREE.ConeGeometry(radius, height);
-    mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(x, y, z);
-    obj.add(mesh);
+    objects.push(mesh);
+    colors.push(gray);
     return mesh;
 }
 
 function createSphere(obj, x, y, z, radius, width, height, color) {
     'use strict' ;
-    material = new THREE.MeshBasicMaterial({ color: color });
+    material = new THREE.MeshPhongMaterial({ color: color });
     geometry = new THREE.SphereGeometry(radius, width, height);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
     obj.add(mesh);
+
+    objects.push(mesh);
+    colors.push(color);
     return mesh;
 }
 
 function createCoolSphere(obj, color, x, y, z, radius, widthSegments, heightSegments, phiStart, phiLenght, thetaStart, spot) {
     'use strict';
-    if (spot)
-        material = new THREE.MeshPhongMaterial({ color: color, emissive: white });
-    else
-        material = new THREE.MeshPhongMaterial({ color: color });
+    material = new THREE.MeshPhongMaterial({ color: color });
     geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments, phiStart, phiLenght, thetaStart);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
     obj.add(mesh);
+
+    objects.push(mesh);
+    colors.push(color);
     return mesh;
 }
 
 
 function createHouseWallBack(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -235,6 +218,9 @@ function createHouseWallBack(obj, x, y, z, width, height, color) {
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x-12,y-6,z-6);
     obj.add(mesh);
+
+    objects.push(mesh);
+    colors.push(color);
     return mesh;
 
 }
@@ -242,7 +228,7 @@ function createHouseWallBack(obj, x, y, z, width, height, color) {
 
 function createHouseWallSide(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -265,12 +251,15 @@ function createHouseWallSide(obj, x, y, z, width, height, color) {
     mesh.position.set(x-12,y-6,z-6);
     mesh.rotation.set(Math.PI/2, Math.PI, 0);
     obj.add(mesh);
+
+    objects.push(mesh);
+    colors.push(color);
     return mesh;
 }
 
 function createHouseFront(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -325,14 +314,16 @@ function createHouseFront(obj, x, y, z, width, height, color) {
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x-12,y-6,z+6);
     obj.add(mesh);
-    return mesh;
 
+    objects.push(mesh);
+    colors.push(color);
+    return mesh;
 }
 
 
 function createRoof(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
     geometry = new THREE.BufferGeometry();
 
     // Define the vertices of the pyramid
@@ -363,12 +354,15 @@ function createRoof(obj, x, y, z, width, height, color) {
 
     mesh = new THREE.Mesh(geometry, material);
     obj.add(mesh);
+
+    objects.push(mesh);
+    colors.push(color);
     return mesh;
 }
 
 function createWindows(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -397,6 +391,9 @@ function createWindows(obj, x, y, z, width, height, color) {
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x-12,y-6,z+6);
     obj.add(mesh);
+
+    objects.push(mesh);
+    colors.push(color);
     return mesh;  
 }
 
@@ -405,7 +402,7 @@ function createDoor(obj, x, y, z, width, height) {
     var door = new THREE.Object3D();
 
     'use strict';
-    material = new THREE.MeshBasicMaterial({ color: lightBlue, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: lightBlue, side: THREE.DoubleSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -429,6 +426,9 @@ function createDoor(obj, x, y, z, width, height) {
     door.add(mesh);
     createSphere(door, x+1, y-1.4, z+6.3, 0.3, 80, 32, white);
     obj.add(door);
+
+    objects.push(mesh);
+    colors.push(lightBlue);
     return mesh;
     
 }
@@ -508,28 +508,37 @@ function createTree(x,y,z) {
     
     var tree = new THREE.Object3D()
 
-    createCylinder(tree, x, y, z);
+    mesh = createCylinder(tree, x, y, z);
 
-    material = new THREE.MeshBasicMaterial({ color: green, wireframe: false } );
+    objects.push(mesh);
+    colors.push(orange_brown);
+
+    material = new THREE.MeshPhongMaterial({ color: green } );
     geometry = new THREE.SphereGeometry(3, 32, 16);
     geometry.scale(2, 1, 1);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y + 8.5, z);
+    objects.push(mesh);
+    colors.push(green);
     tree.add(mesh);
     
-    material = new THREE.MeshBasicMaterial({ color: orange_brown, wireframe: false });
+    material = new THREE.MeshPhongMaterial({ color: orange_brown });
     geometry = new THREE.CylinderGeometry(0.5, 0.5, 4, 32);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x - 3, y + 3, z);
     mesh.rotation.z += Math.PI / 4;
+    objects.push(mesh);
+    colors.push(orange_brown);
     tree.add(mesh);
 
-    material = new THREE.MeshBasicMaterial({ color: green, wireframe: false } );
+    material = new THREE.MeshPhongMaterial({ color: green } );
     geometry = new THREE.SphereGeometry(0.5, 32, 16);
     geometry.scale(2, 1, 1);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x - 4.7, y + 4.7, z);
     mesh.rotation.z += Math.PI / 4;
+    objects.push(mesh);
+    colors.push(green);
     tree.add(mesh);
 
     scene.add(tree);
@@ -660,9 +669,6 @@ function init() {
 
     render(cameras[0]);
 
-    createGround();
-    createSkydome();
-
     controls = new THREE.OrbitControls(currentCam, renderer.domElement);
 
     window.addEventListener("keydown", onKeyDown);
@@ -700,6 +706,7 @@ function onResize() {
 ///////////////////////
 function onKeyDown(e) {
     'use strict';
+    let size = objects.length;
     switch (e.keyCode) {
         case 37: // left arrow
             leftArrow = true;
@@ -721,36 +728,29 @@ function onKeyDown(e) {
             break;
         case 83: // letter S
             canSwitchUFOSpotLight = true;
-            break;function onKeyDown(e) {
-                'use strict';
-                switch (e.keyCode) {
-                    case 68: // letter D
-                        canSwitchLight = true;
-                        break;
-                }
+        case 81:  //Q
+            var i;
+            for (i = 0; i < size; i++) {
+                objects[i].material = new THREE.MeshLambertMaterial({ color: colors[i], side: THREE.DoubleSide });
             }
-            
-            ///////////////////////
-            /* KEY UP CALLBACK */
-            ///////////////////////
-            function onKeyUp(e){
-                'use strict';
-                switch (e.keyCode) {
-                    case 68: // letter D
-                        canSwitchLight = false;
-                        break;
-                }
+            break;
+        case 82:  //R
+            var i;
+            for (i = 0; i < size; i++) {
+                objects[i].material = new THREE.MeshBasicMaterial({ color: colors[i], side: THREE.DoubleSide });
             }
-        case 114: //r
-            meshDoor.material = materialDoor;
             break;
         case 87:  //W
-        case 119: //w
-            meshDoor.material = phongMaterial;
+            var i;
+            for (i = 0; i < size; i++) {
+                objects[i].material = new THREE.MeshPhongMaterial({ color: colors[i], side: THREE.DoubleSide });
+            }
             break;
         case 69:  //E
-        case 101: //e
-            meshDoor.material = toonMaterial;
+            var i;
+            for (i = 0; i < size; i++) {
+                objects[i].material = new THREE.MeshToonMaterial({ color: colors[i], side: THREE.DoubleSide });
+            }
             break;
     }
 }
