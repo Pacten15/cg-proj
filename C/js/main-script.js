@@ -361,7 +361,7 @@ function createHouseWallSide(obj, x, y, z, width, height, color) {
     
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.setIndex(indices);
-
+    
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x-12,y-6,z-6);
     mesh.rotation.set(Math.PI/2, Math.PI, 0);
@@ -533,17 +533,20 @@ function createDoor(obj, x, y, z, width, height) {
         3, 0, 2
     ];
     
+
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.setIndex(indices);
 
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x-12,y-6,z+6);
+    objects.push(mesh);
+    colors.push(lightBlue);
     door.add(mesh);
     createSphere(door, x+1, y-1.4, z+6.3, 0.3, 80, 32, white);
     obj.add(door);
 
     objects.push(mesh);
-    colors.push(lightBlue);
+    colors.push(white);
     return mesh;
     
 }
