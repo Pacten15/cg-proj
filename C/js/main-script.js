@@ -2,7 +2,7 @@
 /* GLOBAL VARIABLES */
 //////////////////////
 
-var scene, cameras = [], renderer, currentCam, groundMesh;
+var scene, renderer, groundMesh;
 
 var geometry, material, mesh;
 
@@ -30,7 +30,8 @@ var objects = [], colors = [];
 
 
 // colors
-const red = 0xFF0000, blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000, white = 0xF8F8FF, orange = 0xF5761A, moonYellow = 0xEBC815, lightBlue = 0x6495ED, orange_brown = 0xC5761A, green = 0x006400;
+const blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000, white = 0xF8F8FF, lilac = 0xC8A2C8;
+const orange = 0xF5761A, moonYellow = 0xEBC815, lightBlue = 0x6495ED, orange_brown = 0xC5761A, green = 0x006400, lightGreen = 0x9AF764;
 
 var canSwitchGlobalLight = false;
 var canSwitchUFOPointLights = false;
@@ -41,28 +42,132 @@ var rightArrow = false;
 var upArrow = false;
 var downArrow = false;
 
+var scene,  groundScene,  skyScene;
+var camera, groundCamera, skyCamera;
+
+var groundRenderTarget;
+var skyRenderTarget;
+
+var generateGroundTexture = false;
+var generateSkyTexture = false;
+
+var planeSide = 250;
+
 
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
-function createScene(){
+function createScene() {
     'use strict';
     scene = new THREE.Scene();
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
+    createGround();
     createHouse(0,15.55,30);
+    createMoon();
+    createSkydome();
+    createUFO();
+    createGlobalLight();
+    createAmbientLight();
+    createTrees();
     
+}
+
+function createGroundTextureScene() {
+    'use strict';
+    groundScene = new THREE.Scene();
+    groundScene.background = new THREE.Color("rgb(20%, 20%, 20%)");
+    
+    geometry = new THREE.PlaneGeometry(planeSide, planeSide);
+    material = new THREE.MeshBasicMaterial({ color: lightGreen })
+    mesh = new THREE.Mesh(geometry, material)
+    groundScene.add(mesh);
+    
+    createDots(100, white, groundScene);
+    createDots(100, yellow, groundScene);
+    createDots(100, lilac, groundScene);
+    createDots(100, lightBlue, groundScene);
+}
+
+function createSkyTextureScene() {
+    'use strict';
+    skyScene = new THREE.Scene();
+    skyScene.background = new THREE.Color("rgb(30%, 30%, 30%)");
+
+    geometry = new THREE.PlaneGeometry(planeSide, planeSide);
+    var material = new THREE.ShaderMaterial({
+        uniforms: {
+          color1: {
+            value: new THREE.Color("blue")
+          },
+          color2: {
+            value: new THREE.Color("purple")
+          }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+      
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 color1;
+          uniform vec3 color2;
+        
+          varying vec2 vUv;
+          
+          void main() {
+            
+            gl_FragColor = vec4(mix(color1, color2, vUv.y), 1.0);
+          }
+        `,
+    });
+
+    mesh = new THREE.Mesh(geometry, material)
+    skyScene.add(mesh);
+
+    createDots(300, white, skyScene);
+}
+
+function createDots(numDots, color, scene) {
+    for (var i = 0; i < numDots; i++) {
+        createCircle(
+            scene,
+            getRandomBetween(-planeSide/2, planeSide/2),
+            getRandomBetween(-planeSide/2, planeSide/2),
+            0,
+            0.5,
+            color
+        );
+    }
+}
+
+function getRandomBetween(min, max) {
+    return Math.random() * (max - min) + min;
 }
 
 //////////////////////
 /* CREATE CAMERA(S) */
 //////////////////////
-function createPerspectiveCamera(x, y, z) {
+function createPerspectiveCamera(scene, x, y, z) {
     'use strict';
     var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
     camera.position.set(x, y, z);
     camera.lookAt(scene.position);
-    cameras.push(camera);
+    scene.add(camera);
+    return camera;
+
+}
+
+function createOrthographicCamera(scene, x, y, z) {
+    'use strict';
+    var camera = new THREE.OrthographicCamera(-planeSide/2, planeSide/2, planeSide/2, -planeSide/2, 0, 1000);
+    camera.position.set(x, y, 100);
+    camera.lookAt(scene.position);
+    scene.add(camera);
+    return camera;
 }
 
 /////////////////////
@@ -141,6 +246,16 @@ function createPointLight(obj, x, y, z) {
 ////////////////////////
 /* CREATE OBJECT3D(S) */
 ////////////////////////
+
+function createCircle(obj, x, y, z, radius, color) {
+    'use strict';
+    geometry = new THREE.CircleGeometry(radius);
+    material = new THREE.MeshBasicMaterial({ color: color});
+    mesh = new THREE.Mesh(geometry, material)
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+    return mesh;
+}
 
 function createCylinder(obj, x, y, z) {
     'use strict';
@@ -436,18 +551,16 @@ function createDoor(obj, x, y, z, width, height) {
 
 function createGround() {
     'use strict' ;
-    var groundGeo = new THREE.PlaneGeometry(250, 250, 25, 25);
+    var groundGeo = new THREE.PlaneGeometry(planeSide, planeSide, 25, 25);
 
     const textureLoader = new THREE.TextureLoader();
     const texture = textureLoader.load("js/heightmap.png");
-    const green   = textureLoader.load("js/ground.png");
 
     const material = new THREE.MeshStandardMaterial( {
            //color: blue,
-           wireframe: false,
+           map: groundRenderTarget.texture,
            displacementMap: texture,
            displacementScale: 80,
-           map: green,
            side: THREE.DoubleSide
     } );
 
@@ -471,10 +584,7 @@ function createMoon() {
 function createSkydome() {
     'use strict' ;
     geometry = new THREE.SphereGeometry(250, 80, 32);
-    const textureLoader = new THREE.TextureLoader();
-    //Estou a usar uma imagem random mas quando tiveremos as texturas feitas a do céu estrelado coloca-se aqui\\
-    const texture = textureLoader.load("js/2823368.jpg");
-    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide});
+    const material = new THREE.MeshBasicMaterial({ map: skyRenderTarget.texture, side: THREE.BackSide });
     sky = new THREE.Mesh(geometry, material);
     sky.position.set(0,0,0);
     scene.add(sky);
@@ -622,18 +732,27 @@ function moveUFO() {
         if      (upArrow)   ufo.position.z += speed;
         else if (downArrow) ufo.position.z -= speed;
     }
-
-
 }
-
 
 /////////////
 /* DISPLAY */
 /////////////
-function render(camera) {
+function render() {
     'use strict';
-    currentCam = camera;
+    if (generateGroundTexture) {
+        renderer.setRenderTarget(groundRenderTarget);
+        renderer.clear();
+        renderer.render(groundScene, groundCamera);
+    } else if (generateSkyTexture) {
+        renderer.setRenderTarget(skyRenderTarget);
+        renderer.clear();
+        renderer.render(skyScene, skyCamera);
+    }
+    
+    renderer.setRenderTarget(null);
+    renderer.clear();
     renderer.render(scene, camera);
+    //renderer.render(groundScene, groundCamera);
 }
 
 ////////////////////////////////
@@ -641,18 +760,43 @@ function render(camera) {
 ////////////////////////////////
 function init() {
     'use strict';
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
 
-
+    createRenderTargets();
+    
     createScene();
-    createGround();
-    createMoon();
-    createSkydome();
-    createUFO();
-    createGlobalLight();
-    createAmbientLight();
+    createGroundTextureScene();
+    createSkyTextureScene();
+    
+    camera = createPerspectiveCamera(scene, 125, 125, 125); 
+    groundCamera = createOrthographicCamera(groundScene, 0, 0, 10);
+    skyCamera    = createOrthographicCamera(skyScene, 0, 0, 10);    
+    
+    createRenderer();
+    
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.keys = {};
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("resize", onResize);
+}
+
+function createRenderTargets() {
+    'use strict';
+    groundRenderTarget = new THREE.WebGLRenderTarget(planeSide * 64, planeSide * 64);
+    skyRenderTarget    = new THREE.WebGLRenderTarget(planeSide * 64, planeSide * 64);
+}
+
+function createRenderer() {
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+}
+
+function createTrees() {
     tree1 = createTree(0, 15.5, 0);
     tree1.rotation.y += Math.PI;
     tree1.position.set(70, 15.5, 70);
@@ -664,16 +808,6 @@ function init() {
     tree4.rotation.z -= Math.PI/6;
     tree4.rotation.y += Math.PI/4;
     tree5 = createTree(10, 15.5, 10);
-
-    createPerspectiveCamera(125, 125, 125); 
-
-    render(cameras[0]);
-
-    controls = new THREE.OrbitControls(currentCam, renderer.domElement);
-
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("keyup", onKeyUp);
-    window.addEventListener("resize", onResize);
 }
 
 /////////////////////
@@ -681,11 +815,9 @@ function init() {
 /////////////////////
 function animate() {
     'use strict';
-    update();
-    
-    render(currentCam);
-
     requestAnimationFrame(animate);
+    update();
+    render();
 }
 
 ////////////////////////////
@@ -695,8 +827,8 @@ function onResize() {
     'use strict';
     renderer.setSize(window.innerWidth, window.innerHeight);
     if (window.innerHeight > 0 && window.innerWidth > 0) {
-        cameras[0].aspect = window.innerWidth / window.innerHeight;
-        cameras[0].updateProjectionMatrix();
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
     }
     render(currentCam);
 }
@@ -708,6 +840,12 @@ function onKeyDown(e) {
     'use strict';
     let size = objects.length;
     switch (e.keyCode) {
+        case 49: // number 1
+            generateGroundTexture = true;
+            break;
+        case 50: // number 2
+            generateSkyTexture = true;
+            break;
         case 37: // left arrow
             leftArrow = true;
             break;
@@ -761,6 +899,12 @@ function onKeyDown(e) {
 function onKeyUp(e){
     'use strict';
     switch (e.keyCode) {
+        case 49: // number 1
+            generateGroundTexture = false;
+            break;
+        case 50: // number 2
+            generateSkyTexture = false;
+            break;
         case 37: // left arrow
             leftArrow = false;
             break;
@@ -782,6 +926,5 @@ function onKeyUp(e){
         case 83: // letter S
             canSwitchUFOSpotLight = false;
             break;
-    
     }
 }
