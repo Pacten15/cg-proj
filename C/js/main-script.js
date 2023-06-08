@@ -223,10 +223,12 @@ function switchLights() {
     }
 
     function switchEmmissive(mesh, emmissionColor) {
-        if (mesh.material.emissive.getHex() == emmissionColor) {
-            mesh.material.emissive.set(black);
-        } else if (mesh.material.emissive.getHex() == black) {
+        if (mesh.material.emissive !== undefined) {
+            if (mesh.material.emissive.getHex() == emmissionColor) {
+                mesh.material.emissive.set(black);
+            } else if (mesh.material.emissive.getHex() == black) {
             mesh.material.emissive.set(emmissionColor);
+            }
         }
     }
 }
@@ -909,6 +911,7 @@ function onKeyDown(e) {
             break;
         case 83: // letter S
             canSwitchUFOSpotLight = true;
+            break;
         case 81:  //Q
             var i;
             for (i = 0; i < size; i++) {
