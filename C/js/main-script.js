@@ -600,6 +600,7 @@ function createGround() {
     groundMesh.rotation.x = -Math.PI / 2;
     groundMesh.rotation.z = -Math.PI / 4;
     groundMesh.position.y = -10;
+    groundMesh.scale.set(1.40,1.40,1.401);
     scene.add(groundMesh);
 }
 
@@ -799,7 +800,7 @@ function init() {
     createGroundTextureScene();
     createSkyTextureScene();
     
-    camera = createPerspectiveCamera(scene, 125, 125, 125);
+    camera = createPerspectiveCamera(scene, 200, 100, 30);
     groundCamera = createOrthographicCamera(groundScene, 0, 0, 10);
     skyCamera    = createOrthographicCamera(skyScene, 0, 0, 10);    
     
