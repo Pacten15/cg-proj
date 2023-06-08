@@ -20,6 +20,9 @@ var moon, globalLight, ambientLight;
 
 var tree1, tree2, tree3, tree4, tree5, meshDoor, materialDoor;
 
+
+var currentCam = [];
+
 var ufo;
 var ufoPointLights = [];
 var ufoSpotLight;
@@ -45,6 +48,9 @@ var downArrow = false;
 var scene,  groundScene,  skyScene;
 var camera, groundCamera, skyCamera;
 
+var stereoCamera;
+var leftEyeCamera, rightEyeCamera;
+
 var groundRenderTarget;
 var skyRenderTarget;
 
@@ -63,7 +69,7 @@ function createScene() {
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
     createGround();
-    createHouse(0,15.55,30);
+    createHouse(0,-2,30);
     createMoon();
     createSkydome();
     createUFO();
@@ -169,6 +175,7 @@ function createOrthographicCamera(scene, x, y, z) {
     scene.add(camera);
     return camera;
 }
+
 
 /////////////////////
 /* CREATE LIGHT(S) */
@@ -315,20 +322,25 @@ function createHouseWallBack(obj, x, y, z, width, height, color) {
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
-        0, 0, 0,                       // Vertex 1
-        0, height, 0,                  // Vertex 2
-        width , 0, 0,                  // Vertex 3
-        width , height, 0             // Vertex 4
+        0, 0, 0,                       // Vertex 0
+        0, height, 0,                  // Vertex 1
+        width , 0, 0,                  // Vertex 2
+        width , height, 0             // Vertex 3
     ]);
 
 
     var indices = [
-        0, 1, 2,
-        2, 3, 1
+        3, 2, 0,
+        0, 1, 3
     ];
+
+    var indexAttribute = new THREE.Uint16BufferAttribute(indices, 1);
     
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geometry.setIndex(indices);
+    geometry.setIndex(indexAttribute);
+
+    // Compute vertex normals for proper shading
+    geometry.computeVertexNormals();
 
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x-12,y-6,z-6);
@@ -355,13 +367,15 @@ function createHouseWallSide(obj, x, y, z, width, height, color) {
 
 
     var indices = [
-        0, 1, 2,
-        2, 3, 1
+        3, 2, 0,
+        0, 1, 3
     ];
     
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.setIndex(indices);
-    
+    // Compute vertex normals for proper shading
+    geometry.computeVertexNormals();
+
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x-12,y-6,z-6);
     mesh.rotation.set(Math.PI/2, Math.PI, 0);
@@ -391,45 +405,45 @@ function createHouseFront(obj, x, y, z, width, height, color) {
         width-14, 0, 0,                         // Vertex 10
         (1/4)*width, (1/3)*height, 0,           // Vertex 11
         (1/4)*width, (2/3)*height, 0,           // Vertex 12
-        width-14, (1/3)*height, 0,              // Vertex 13
-        width-14, (2/3)*height, 0,              // Vertex 14
-        width-10, (2/3)*height, 0,              // Vertex 15
-        width-10, (1/3)*height, 0,              // Vertex 16
-        width-6,  (2/3)*height, 0,              // Vertex 17
-        width-6,  (1/3)*height, 0,              // Vertex 18
-        width-2,  (2/3)*height, 0,              // Vertex 19
-        width-2,  (1/3)*height, 0,              // Vertex 20
-        width,    (1/3)*height, 0,              // Vertex 21
-        width-10, 0, 0                          // Vertex 22
+        width-14, (2/3)*height, 0,              // Vertex 13
+        width-10, (2/3)*height, 0,              // Vertex 14
+        width-10, (1/3)*height, 0,              // Vertex 15
+        width-6,  (2/3)*height, 0,              // Vertex 16
+        width-6,  (1/3)*height, 0,              // Vertex 17
+        width-2,  (2/3)*height, 0,              // Vertex 18
+        width-2,  (1/3)*height, 0,              // Vertex 19
+        width,    (1/3)*height, 0,              // Vertex 20
+        width-10, 0, 0                          // Vertex 21
  
     ]);
 
 
     var indices = [
+        3, 5, 4,
         4, 1, 3,
-        3, 4, 5,
+        8, 7, 6,
         6, 4, 8,
-        8, 6, 7,
+        9, 10, 0,
         0, 6, 9,
-        9, 0, 10,
-        11, 12, 14,
-        14, 11, 13,
-        22, 16, 21,
-        21, 22, 2,
-        16, 15, 17,
-        17, 16, 18,
-        20, 19, 5,
-        5, 20, 21
-
+        13, 9, 11,
+        11, 12, 13,
+        16, 17, 15,
+        15, 14, 16,
+        20, 2, 21,
+        21, 15, 20,
+        5, 20, 19,
+        19, 18, 5
     ];
     
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.setIndex(indices);
 
+    // Compute vertex normals for proper shading
+    geometry.computeVertexNormals();
+
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x-12,y-6,z+6);
     obj.add(mesh);
-
     objects.push(mesh);
     colors.push(color);
     return mesh;
@@ -444,20 +458,28 @@ function createRoof(obj, x, y, z, width, height, color) {
     // Define the vertices of the pyramid
     var vertices = new Float32Array ([
         x, y + height, z,                          // Vertex 0 (apex)
-        x - width , y, z - width / 2,             // Vertex 1
-        x + width , y, z - width / 2,             // Vertex 2
-        x + width , y, z + width / 2,             // Vertex 3
-        x - width , y, z + width / 2              // Vertex 4
+        x - width , y, z - width / 2,              // Vertex 1 
+        x, y, z - width/2,                         // Vertex 2
+        x + width , y, z - width / 2,              // Vertex 3
+        x + width, y, z,                           // Vertex 4 
+        x + width , y, z + width / 2,              // Vertex 5
+        x, y, z + width / 2,                       // Vertex 6
+        x - width , y, z + width / 2,              // Vertex 7
+        x , y, z + width/2,                         // Vertex 8
+        x - width, y, z 
     ]);
 
     // Define the faces (triangles) by specifying the indices of the vertices
     var indices = [
-        0, 1, 2,    // Triangle 1 (apex, v1, v2)
-        0, 2, 3,    // Triangle 2 (apex, v2, v3)
-        0, 3, 4,    // Triangle 3 (apex, v3, v4)
-        0, 4, 1,    // Triangle 4 (apex, v4, v1)
-        1, 2, 3,    // Triangle 5 (v1, v2, v3)
-        1, 3, 4     // Triangle 6 (v1, v3, v4)
+        0, 2, 1,
+        0, 3, 2,
+        0, 3, 4,
+        0, 4, 5,
+        0, 5, 8,
+        0, 8, 7,
+        0, 9, 7,
+        0, 1, 9
+
     ];
 
     // Set the vertices and indices of the geometry
@@ -493,15 +515,18 @@ function createWindows(obj, x, y, z, width, height, color) {
 
 
     var indices = [
+        3, 2, 0,
         0, 1, 3,
-        3, 0, 2,
-        7, 6, 4,
-        4, 7, 5
+        4, 5, 7,
+        7, 6, 4
 
     ];
     
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.setIndex(indices);
+
+    // Compute vertex normals for proper shading
+    geometry.computeVertexNormals();
 
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x-12,y-6,z+6);
@@ -529,13 +554,17 @@ function createDoor(obj, x, y, z, width, height) {
 
 
     var indices = [
-        0, 1, 3,
-        3, 0, 2
+        3, 2, 0,
+        0, 1, 3
     ];
     
 
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.setIndex(indices);
+
+    // Compute vertex normals for proper shading
+    geometry.computeVertexNormals();
+
 
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x-12,y-6,z+6);
@@ -570,16 +599,16 @@ function createGround() {
     groundMesh = new THREE.Mesh(groundGeo, material);
     groundMesh.rotation.x = -Math.PI / 2;
     groundMesh.rotation.z = -Math.PI / 4;
-    groundMesh.position.y = 25;
+    groundMesh.position.y = -10;
     scene.add(groundMesh);
 }
 
 function createMoon() {
-    'use strict';20, 100, 20, 10
+    'use strict';
     material = new THREE.MeshPhongMaterial({ emissive: moonYellow });
     geometry = new THREE.SphereGeometry(10);
     moon = new THREE.Mesh(geometry, material);
-    moon.position.set(20, 100, 20);
+    moon.position.set(20, 80, 20);
     moon.scale.set(2,2,2);
     scene.add(moon);
 }
@@ -611,9 +640,9 @@ function createHouse(x,y,z) {
 
     createRoof(house, x, y + 6, z, 12, 8 ,orange);
 
-
     scene.add(house);
-    house.position.set(x, y, z);
+    house.rotation.set(0, 40, 0);
+    house.position.set(x-30, y, z+40);
 }
 
 function createTree(x,y,z) {
@@ -682,7 +711,7 @@ function createUFO() {
 
     ufoSpotLight = createSpotLight(ufo);
 
-    ufo.position.set(0, 75, 75);
+    ufo.position.set(0, 50, 75);
     ufo.scale.set(2,2,2);
     scene.add(ufo);
 
@@ -770,11 +799,19 @@ function init() {
     createGroundTextureScene();
     createSkyTextureScene();
     
-    camera = createPerspectiveCamera(scene, 125, 125, 125); 
+    camera = createPerspectiveCamera(scene, 125, 125, 125);
     groundCamera = createOrthographicCamera(groundScene, 0, 0, 10);
     skyCamera    = createOrthographicCamera(skyScene, 0, 0, 10);    
     
     createRenderer();
+
+    document.body.appendChild( VRButton.createButton( renderer ) );
+    renderer.xr.enabled = true;
+
+    renderer.setAnimationLoop( function () {
+        renderer.render( scene, camera );
+    
+    } );
     
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.keys = {};
@@ -797,20 +834,22 @@ function createRenderer() {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(renderer.domElement);
+    
 }
 
 function createTrees() {
-    tree1 = createTree(0, 15.5, 0);
+    tree1 = createTree(0, -2, 0);
     tree1.rotation.y += Math.PI;
-    tree1.position.set(70, 15.5, 70);
-    tree2 = createTree(10, 15.5, 65);
-    tree3 = createTree(0, 15.5, 0);
+    tree1.position.set(70, -2, 70);
+    tree2 = createTree(10, -2, 65);
+    tree3 = createTree(0, -2, 0);
     tree3.rotation.y += Math.PI;
-    tree3.position.set(-20, 15.5, 90);
-    tree4 = createTree(-10, 13.5, 40);
+    tree3.position.set(-20, -2, 90);
+    tree4 = createTree(-10, -5, 40);
     tree4.rotation.z -= Math.PI/6;
     tree4.rotation.y += Math.PI/4;
-    tree5 = createTree(10, 15.5, 10);
+    tree5 = createTree(10, -2, 10);
+
 }
 
 /////////////////////
@@ -856,7 +895,7 @@ function onKeyDown(e) {
             upArrow = true;
             break;
         case 39: // right arrow
-            rightArrow = true;
+            rightArrow = true;1
             break;
         case 40: // down arrow
             downArrow = true;
