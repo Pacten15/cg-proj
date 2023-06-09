@@ -70,7 +70,7 @@ function createScene() {
     scene.background = new THREE.Color("rgb(90%, 90%, 90%)");
     scene.add(new THREE.AxesHelper(10));
     createGround();
-    createHouse(0,-2,30);
+    createHouse(20,-1.9,60);
     createMoon();
     createSkydome();
     createUFO();
@@ -643,7 +643,7 @@ function createGround() {
     groundMesh.rotation.x = -Math.PI / 2;
     groundMesh.rotation.z = -Math.PI / 4;
     groundMesh.position.y = -10;
-    groundMesh.scale.set(1.40,1.40,1.401);
+    groundMesh.scale.set(1.40,1.40,1.40);
     scene.add(groundMesh);
 }
 
@@ -695,7 +695,7 @@ function createHouse(x,y,z) {
 
     scene.add(house);
     house.rotation.set(0, 40, 0);
-    house.position.set(x-30, y, z+40);
+    house.position.set(x-80, y, z+50);
 }
 
 function createTree(x,y,z) {
@@ -901,7 +901,7 @@ function init() {
     createGroundTextureScene(true);
     createSkyTextureScene(true);
     
-    camera = createPerspectiveCamera(scene, 150, 100, 5);
+    camera = createPerspectiveCamera(scene, 145, 100, 5);
     groundCamera = createOrthographicCamera(groundScene, 0, 0, 10);
     skyCamera    = createOrthographicCamera(skyScene, 0, 0, 10);    
     
