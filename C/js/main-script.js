@@ -794,7 +794,8 @@ function handleCollisions(){
 function turnEmissive() {
     if (ufoPointLights[0].color.getHex() == black) {
         for (const ball of ufoLightBalls) {
-            ball.material.emissive.set(black);
+            if (ball.material.emissive !== undefined)
+                ball.material.emissive.set(black);
         }
     }
     else {
@@ -804,14 +805,16 @@ function turnEmissive() {
         }
     }
     if (ufoSpotLight.color.getHex() == black) {
-        ufoFlatCylinder.material.emissive.set(black);
+        if (ufoFlatCylinder.material.emissive !== undefined)
+            ufoFlatCylinder.material.emissive.set(black);
     }
     else {
         if (ufoFlatCylinder.material.emissive !== undefined)
             ufoFlatCylinder.material.emissive.set(gray);
     }
     if (globalLight.color.getHex() == black) {
-        moonMesh.material.emissive.set(black);
+        if(moonMesh.material.emissive !== undefined)
+            moonMesh.material.emissive.set(black);
     }
     else {
         if (moonMesh.material.emmisive !== undefined)
