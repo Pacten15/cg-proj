@@ -644,7 +644,7 @@ function createGround() {
            //color: blue,
            map: groundRenderTarget.texture,
            displacementMap: texture,
-           displacementScale: 80,
+           displacementScale: 25,
            side: THREE.DoubleSide
     });
 
