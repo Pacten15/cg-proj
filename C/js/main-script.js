@@ -216,7 +216,7 @@ function switchLights() {
             switchIt(pointLight, white);
         }
         for (const lightBall of ufoLightBalls) {
-            switchEmmissive(lightBall, white);
+            switchEmmissive(lightBall, lightBlue);
         }
         canSwitchUFOPointLights = false;
     } else if (canSwitchUFOSpotLight) {
@@ -766,6 +766,10 @@ function createUFO() {
         ufoPointLights.push(createPointLight(ufo, placer.x, placer.y, placer.z))
     }
 
+    for (const ball of ufoLightBalls) {
+        ball.material.color.set(lightBlue);
+    }
+
     ufoFlatCylinder = createCoolCylinder(ufo);
 
     ufoSpotLight = createSpotLight(ufo);
@@ -793,6 +797,19 @@ function handleCollisions(){
 
 }
 
+function keepPointEmmissive() {
+    if (ufoPointLights[0].color.getHex() == black) {
+        for (const ball of ufoLightBalls) {
+            ball.material.emissive.set(black);
+        }
+    }
+    else {
+        for (const ball of ufoLightBalls) {
+            ball.material.emissive.set(lightBlue);
+        }
+    }
+}
+
 ////////////
 /* UPDATE */
 ////////////
@@ -800,6 +817,7 @@ function update(){
     'use strict';
     controls.update()
     ufo.rotation.y += Math.PI/300
+    keepPointEmmissive();
     switchLights();
     moveUFO();
 }
