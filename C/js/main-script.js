@@ -296,7 +296,7 @@ function createCylinder(obj, x, y, z) {
 
 function createCoolCylinder(obj) {
     'use strict';
-    material = new THREE.MeshPhongMaterial({ emissive: gray });
+    material = new THREE.MeshPhongMaterial({ color: gray, emissive: gray });
     geometry = new THREE.CylinderGeometry(3, 3, .5, 32);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(0, -1/3, 0);
@@ -660,11 +660,14 @@ function createMoon() {
     'use strict';
     moon = new THREE.Object3D();
 
-    material = new THREE.MeshPhongMaterial({ emissive: moonYellow });
+    material = new THREE.MeshPhongMaterial({ color: moonYellow });
     geometry = new THREE.SphereGeometry(10);
     mesh = new THREE.Mesh(geometry, material);
     mesh.scale.set(2,2,2);
     moon.add(mesh);
+
+    objects.push(mesh);
+    colors.push(moonYellow);
     
     createGlobalLight();
     
@@ -797,7 +800,7 @@ function handleCollisions(){
 
 }
 
-function keepPointEmmissive() {
+function turnEmissive() {
     if (ufoPointLights[0].color.getHex() == black) {
         for (const ball of ufoLightBalls) {
             ball.material.emissive.set(black);
@@ -808,6 +811,12 @@ function keepPointEmmissive() {
             ball.material.emissive.set(lightBlue);
         }
     }
+    if (ufoSpotLight.color.getHex() == black) {
+        ufoFlatCylinder.material.emissive.set(black);
+    }
+    else {
+        ufoFlatCylinder.material.emissive.set(gray);
+    }
 }
 
 ////////////
@@ -817,7 +826,7 @@ function update(){
     'use strict';
     controls.update()
     ufo.rotation.y += Math.PI/300
-    keepPointEmmissive();
+    turnEmissive();
     switchLights();
     moveUFO();
 }
