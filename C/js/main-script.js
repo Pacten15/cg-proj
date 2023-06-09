@@ -340,7 +340,7 @@ function createCoolSphere(obj, color, x, y, z, radius, widthSegments, heightSegm
 
 function createHouseWallBack(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.FrontSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -375,9 +375,9 @@ function createHouseWallBack(obj, x, y, z, width, height, color) {
 }
 
 
-function createHouseWallSide(obj, x, y, z, width, height, color) {
+function createHouseWallSideRight(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.FrontSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -408,9 +408,42 @@ function createHouseWallSide(obj, x, y, z, width, height, color) {
     return mesh;
 }
 
+function createHouseWallSideLeft(obj, x, y, z, width, height, color) {
+    'use strict';
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.FrontSide });
+    geometry = new THREE.BufferGeometry();
+
+    var vertices = new Float32Array ([
+        0, 0, 0,                       // Vertex 0
+        0, height/2, 0,                // Vertex 1
+        0, 0, width,                   // Vertex 2
+        0, height/2, width             // Vertex 3
+    ]);
+
+
+    var indices = [
+        2, 1, 0,
+        3, 1, 2    
+    ];
+    
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(indices);
+    // Compute vertex normals for proper shading
+    geometry.computeVertexNormals();
+
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x-12,y-6,z-6);
+    mesh.rotation.set(Math.PI/2, Math.PI, 0);
+    obj.add(mesh);
+
+    objects.push(mesh);
+    colors.push(color);
+    return mesh;
+}
+
 function createHouseFront(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.FrontSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -441,20 +474,20 @@ function createHouseFront(obj, x, y, z, width, height, color) {
 
 
     var indices = [
-        3, 5, 4,
-        4, 1, 3,
-        8, 7, 6,
-        6, 4, 8,
-        9, 10, 0,
-        0, 6, 9,
-        13, 9, 11,
-        11, 12, 13,
-        16, 17, 15,
-        15, 14, 16,
-        20, 2, 21,
-        21, 15, 20,
-        5, 20, 19,
-        19, 18, 5
+        4, 5, 3,
+        1, 4, 3,
+        4, 6, 8,
+        6, 7, 8,
+        10, 9, 0,
+        9, 6, 0,
+        9, 13, 11,
+        13, 12, 11,
+        17, 16, 15,
+        16, 14, 15,
+        2, 20, 21,
+        20, 15, 21,
+        20, 5, 19,
+        5, 18, 19
     ];
     
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
@@ -474,7 +507,7 @@ function createHouseFront(obj, x, y, z, width, height, color) {
 
 function createRoof(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.FrontSide });
     geometry = new THREE.BufferGeometry();
 
     // Define the vertices of the pyramid
@@ -495,10 +528,10 @@ function createRoof(obj, x, y, z, width, height, color) {
     var indices = [
         0, 2, 1,
         0, 3, 2,
-        0, 3, 4,
-        0, 4, 5,
-        0, 5, 8,
-        0, 8, 7,
+        3, 0, 4,
+        5, 4, 0,
+        5, 0, 8,
+        7, 8, 0,
         0, 9, 7,
         0, 1, 9
 
@@ -521,7 +554,7 @@ function createRoof(obj, x, y, z, width, height, color) {
 
 function createWindows(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.FrontSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -537,10 +570,10 @@ function createWindows(obj, x, y, z, width, height, color) {
 
 
     var indices = [
-        3, 2, 0,
-        0, 1, 3,
-        4, 5, 7,
-        7, 6, 4
+        2, 3, 0,
+        3, 1, 0,
+        5, 4, 7,
+        4, 6, 7
 
     ];
     
@@ -562,9 +595,7 @@ function createWindows(obj, x, y, z, width, height, color) {
 function createDoor(obj, x, y, z, width, height) {
     'use strict' ;
     var door = new THREE.Object3D();
-
-    'use strict';
-    material = new THREE.MeshPhongMaterial({ color: lightBlue, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: lightBlue, side: THREE.FrontSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -576,8 +607,8 @@ function createDoor(obj, x, y, z, width, height) {
 
 
     var indices = [
-        3, 2, 0,
-        0, 1, 3
+        2, 3, 0,
+        3, 1, 0
     ];
     
 
@@ -595,7 +626,6 @@ function createDoor(obj, x, y, z, width, height) {
     door.add(mesh);
     createSphere(door, x+1, y-1.4, z+6.3, 0.3, 80, 32, white);
     obj.add(door);
-
     objects.push(mesh);
     colors.push(white);
     return mesh;
@@ -657,9 +687,9 @@ function createHouse(x,y,z) {
 
     createHouseWallBack(house, x, y, z, 24, 12, white);
 
-    createHouseWallSide(house , x, y, z, 12, 24, white);
+    createHouseWallSideRight(house , x, y, z, 12, 24, white);
 
-    createHouseWallSide(house , x+24, y, z, 12, 24, white);
+    createHouseWallSideLeft(house , x+24, y, z, 12, 24, white);
 
     createHouseFront(house, x, y, z, 24, 12, white);
 
@@ -844,7 +874,7 @@ function init() {
     createGroundTextureScene(true);
     createSkyTextureScene(true);
     
-    camera = createPerspectiveCamera(scene, 200, 100, 30);
+    camera = createPerspectiveCamera(scene, 150, 100, 5);
     groundCamera = createOrthographicCamera(groundScene, 0, 0, 10);
     skyCamera    = createOrthographicCamera(skyScene, 0, 0, 10);    
     
