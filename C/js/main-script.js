@@ -799,20 +799,23 @@ function turnEmissive() {
     }
     else {
         for (const ball of ufoLightBalls) {
-            ball.material.emissive.set(lightBlue);
+            if (ball.material.emissive !== undefined)
+                ball.material.emissive.set(lightBlue);
         }
     }
     if (ufoSpotLight.color.getHex() == black) {
         ufoFlatCylinder.material.emissive.set(black);
     }
     else {
-        ufoFlatCylinder.material.emissive.set(gray);
+        if (ufoFlatCylinder.material.emissive !== undefined)
+            ufoFlatCylinder.material.emissive.set(gray);
     }
     if (globalLight.color.getHex() == black) {
         moonMesh.material.emissive.set(black);
     }
     else {
-        moonMesh.material.emissive.set(moonYellow);
+        if (moonMesh.material.emmisive !== undefined)
+            moonMesh.material.emissive.set(moonYellow);
     }
 }
 
