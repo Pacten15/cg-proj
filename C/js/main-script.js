@@ -58,6 +58,8 @@ var generateGroundTexture = false;
 var generateSkyTexture = false;
 
 var planeSide = 250;
+var textureSide = 50;
+
 
 
 /////////////////////
@@ -73,7 +75,6 @@ function createScene() {
     createMoon();
     createSkydome();
     createUFO();
-    createGlobalLight();
     createAmbientLight();
     createTrees();
     
@@ -84,7 +85,7 @@ function createGroundTextureScene() {
     groundScene = new THREE.Scene();
     groundScene.background = new THREE.Color("rgb(20%, 20%, 20%)");
     
-    geometry = new THREE.PlaneGeometry(planeSide, planeSide);
+    geometry = new THREE.PlaneGeometry(textureSide, textureSide);
     material = new THREE.MeshBasicMaterial({ color: lightGreen })
     mesh = new THREE.Mesh(geometry, material)
     groundScene.add(mesh);
@@ -100,7 +101,7 @@ function createSkyTextureScene() {
     skyScene = new THREE.Scene();
     skyScene.background = new THREE.Color("rgb(30%, 30%, 30%)");
 
-    geometry = new THREE.PlaneGeometry(planeSide, planeSide);
+    geometry = new THREE.PlaneGeometry(textureSide, textureSide);
     var material = new THREE.ShaderMaterial({
         uniforms: {
           color1: {
@@ -141,10 +142,10 @@ function createDots(numDots, color, scene) {
     for (var i = 0; i < numDots; i++) {
         createCircle(
             scene,
-            getRandomBetween(-planeSide/2, planeSide/2),
-            getRandomBetween(-planeSide/2, planeSide/2),
+            getRandomBetween(-textureSide/2, textureSide/2),
+            getRandomBetween(-textureSide/2, textureSide/2),
             0,
-            0.5,
+            0.1,
             color
         );
     }
@@ -169,33 +170,36 @@ function createPerspectiveCamera(scene, x, y, z) {
 
 function createOrthographicCamera(scene, x, y, z) {
     'use strict';
-    var camera = new THREE.OrthographicCamera(-planeSide/2, planeSide/2, planeSide/2, -planeSide/2, 0, 1000);
+    var camera = new THREE.OrthographicCamera(-textureSide/2, textureSide/2, textureSide/2, -textureSide/2, 0, 1000);
     camera.position.set(x, y, 100);
     camera.lookAt(scene.position);
     scene.add(camera);
     return camera;
 }
 
-
 /////////////////////
 /* CREATE LIGHT(S) */
 /////////////////////
 
 function createGlobalLight() {
+    'use strict'
     globalLight = new THREE.DirectionalLight(moonYellow, 1);
-    globalLight.position.set(50, 100, 50);
+    globalLight.position.set(20, 80, 20);
     globalLight.rotation.x += Math.PI/4;
     scene.add(globalLight);
+    //scene.add(globalLight);
     const lightHelper = new THREE.DirectionalLightHelper(globalLight, 1);
-    scene.add( lightHelper );
+    scene.add(lightHelper);
 }
 
 function createAmbientLight() {
-    ambientLight = new THREE.AmbientLight(moonYellow, intensity=0.5);
+    'use strict'
+    ambientLight = new THREE.AmbientLight(moonYellow, 0.5);
     scene.add(ambientLight);
 }
 
 function switchLights() {
+    'use strict'
 
     if (canSwitchGlobalLight) {
         switchIt(globalLight, moonYellow)
@@ -234,6 +238,7 @@ function switchLights() {
 }
 
 function createSpotLight(obj) {
+    'use strict'
     const spotLight = new THREE.SpotLight( white, 1, 100, Math.PI/6, 0);
     //spotLight.position.set( 10, 100, 10 );
     //scene.add(spotLight)
@@ -245,6 +250,7 @@ function createSpotLight(obj) {
 }
 
 function createPointLight(obj, x, y, z) {
+    'use strict'
     const light = new THREE.PointLight(white, 1, 10);
     light.position.set( x, y, z );
     scene.add(light);
@@ -306,7 +312,11 @@ function createSphere(obj, x, y, z, radius, width, height, color) {
 
 function createCoolSphere(obj, color, x, y, z, radius, widthSegments, heightSegments, phiStart, phiLenght, thetaStart, spot) {
     'use strict';
-    material = new THREE.MeshPhongMaterial({ color: color });
+    if (spot) {
+        material = new THREE.MeshPhongMaterial({ emissive: color });
+    } else {
+        material = new THREE.MeshPhongMaterial({ color: color });
+    }
     geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments, phiStart, phiLenght, thetaStart);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
@@ -596,7 +606,7 @@ function createGround() {
            displacementMap: texture,
            displacementScale: 80,
            side: THREE.DoubleSide
-    } );
+    });
 
     groundMesh = new THREE.Mesh(groundGeo, material);
     groundMesh.rotation.x = -Math.PI / 2;
@@ -608,11 +618,17 @@ function createGround() {
 
 function createMoon() {
     'use strict';
+    moon = new THREE.Object3D();
+
     material = new THREE.MeshPhongMaterial({ emissive: moonYellow });
     geometry = new THREE.SphereGeometry(10);
-    moon = new THREE.Mesh(geometry, material);
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.scale.set(2,2,2);
+    moon.add(mesh);
+    
+    createGlobalLight();
+    
     moon.position.set(20, 80, 20);
-    moon.scale.set(2,2,2);
     scene.add(moon);
 }
 
@@ -826,8 +842,8 @@ function init() {
 
 function createRenderTargets() {
     'use strict';
-    groundRenderTarget = new THREE.WebGLRenderTarget(planeSide * 64, planeSide * 64);
-    skyRenderTarget    = new THREE.WebGLRenderTarget(planeSide * 64, planeSide * 64);
+    groundRenderTarget = new THREE.WebGLRenderTarget(textureSide * 64, textureSide * 64);
+    skyRenderTarget    = new THREE.WebGLRenderTarget(textureSide * 64, textureSide * 64);
 }
 
 function createRenderer() {
