@@ -34,7 +34,7 @@ var objects = [], colors = [];
 
 // colors
 const blue = 0x0000FF, yellow = 0xFFFF00, gray = 0x999999, darkGray = 0x555555, black = 0x000000, white = 0xF8F8FF, lilac = 0xC8A2C8;
-const orange = 0xF5761A, moonYellow = 0xEBC815, lightBlue = 0x6495ED, orange_brown = 0xC5761A, green = 0x006400, lightGreen = 0x9AF764;
+const orange = 0xF5761A, moonYellow = 0xEBC815, lightBlue = 0x6495ED, orange_brown = 0xC5761A, green = 0x006400, lightGreen = 0x117c13;
 
 var canSwitchGlobalLight = false;
 var canSwitchUFOPointLights = false;
@@ -183,7 +183,7 @@ function createOrthographicCamera(scene, x, y, z) {
 
 function createGlobalLight() {
     'use strict'
-    globalLight = new THREE.DirectionalLight(moonYellow, 1);
+    globalLight = new THREE.DirectionalLight(moonYellow, .40);
     globalLight.position.set(20, 80, 20);
     globalLight.rotation.x += Math.PI/4;
     scene.add(globalLight);
@@ -239,7 +239,7 @@ function switchLights() {
 
 function createSpotLight(obj) {
     'use strict'
-    const spotLight = new THREE.SpotLight( white, 1, 100, Math.PI/6, 0);
+    const spotLight = new THREE.SpotLight( white, 1, 100, Math.PI/6, .75);
     //spotLight.position.set( 10, 100, 10 );
     //scene.add(spotLight)
     obj.add(spotLight);
@@ -330,7 +330,7 @@ function createCoolSphere(obj, color, x, y, z, radius, widthSegments, heightSegm
 
 function createHouseWallBack(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.FrontSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -367,7 +367,7 @@ function createHouseWallBack(obj, x, y, z, width, height, color) {
 
 function createHouseWallSide(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.FrontSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -400,7 +400,7 @@ function createHouseWallSide(obj, x, y, z, width, height, color) {
 
 function createHouseFront(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.FrontSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -464,7 +464,7 @@ function createHouseFront(obj, x, y, z, width, height, color) {
 
 function createRoof(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.FrontSide });
     geometry = new THREE.BufferGeometry();
 
     // Define the vertices of the pyramid
@@ -511,7 +511,7 @@ function createRoof(obj, x, y, z, width, height, color) {
 
 function createWindows(obj, x, y, z, width, height, color) {
     'use strict';
-    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: color, side: THREE.FrontSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -554,7 +554,7 @@ function createDoor(obj, x, y, z, width, height) {
     var door = new THREE.Object3D();
 
     'use strict';
-    material = new THREE.MeshPhongMaterial({ color: lightBlue, side: THREE.DoubleSide });
+    material = new THREE.MeshPhongMaterial({ color: lightBlue, side: THREE.FrontSide });
     geometry = new THREE.BufferGeometry();
 
     var vertices = new Float32Array ([
@@ -600,7 +600,7 @@ function createGround() {
     const textureLoader = new THREE.TextureLoader();
     const texture = textureLoader.load("js/heightmap.png");
 
-    const material = new THREE.MeshStandardMaterial( {
+    const material = new THREE.MeshPhongMaterial( {
            //color: blue,
            map: groundRenderTarget.texture,
            displacementMap: texture,
@@ -635,7 +635,7 @@ function createMoon() {
 function createSkydome() {
     'use strict' ;
     geometry = new THREE.SphereGeometry(250, 80, 32);
-    const material = new THREE.MeshBasicMaterial({ map: skyRenderTarget.texture, side: THREE.BackSide });
+    const material = new THREE.MeshPhongMaterial({ map: skyRenderTarget.texture, side: THREE.BackSide });
     sky = new THREE.Mesh(geometry, material);
     sky.position.set(0,0,0);
     scene.add(sky);
@@ -770,18 +770,22 @@ function moveUFO() {
         ufo.position.z += speed;
         if      (leftArrow)  ufo.position.x += speed;
         else if (rightArrow) ufo.position.x -= speed;
+        else if (downArrow)  ufo.position.z -= speed;
     } else if (downArrow) {
         ufo.position.z -= speed;
         if      (leftArrow)  ufo.position.x += speed;
         else if (rightArrow) ufo.position.x -= speed;
+        else if (upArrow)    ufo.position.z += speed;
     } else if (leftArrow) {
         ufo.position.x += speed;
         if      (upArrow)   ufo.position.z += speed;
         else if (downArrow) ufo.position.z -= speed;
+        else if (rightArrow) ufo.position.x -= speed;
     } else if (rightArrow) {
         ufo.position.x -= speed;
         if      (upArrow)   ufo.position.z += speed;
         else if (downArrow) ufo.position.z -= speed;
+        else if (leftArrow) ufo.position.x += speed;
     }
 }
 
