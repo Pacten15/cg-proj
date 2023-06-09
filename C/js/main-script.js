@@ -28,6 +28,7 @@ var ufoPointLights = [];
 var ufoSpotLight;
 var ufoLightBalls = [];
 var ufoFlatCylinder;
+var moonMesh;
 
 var objects = [], colors = [];
 
@@ -193,9 +194,6 @@ function createGlobalLight() {
     globalLight = new THREE.DirectionalLight(moonYellow, .40);
     globalLight.position.set(20, 80, 20);
     scene.add(globalLight);
-    //scene.add(globalLight);
-    const lightHelper = new THREE.DirectionalLightHelper(globalLight, 1);
-    scene.add(lightHelper);
 }
 
 
@@ -247,12 +245,8 @@ function switchLights() {
 function createSpotLight(obj) {
     'use strict'
     const spotLight = new THREE.SpotLight( white, 1, 100, Math.PI/6, .75);
-    //spotLight.position.set( 10, 100, 10 );
-    //scene.add(spotLight)
     obj.add(spotLight);
     obj.add(spotLight.target);
-    //const spotLightHelper = new THREE.SpotLightHelper( spotLight );
-    //scene.add(spotLightHelper)
     return spotLight;
 }
 
@@ -262,9 +256,6 @@ function createPointLight(obj, x, y, z) {
     light.position.set( x, y, z );
     scene.add(light);
     obj.add(light)
-    //const sphereSize = 1;
-    //const pointLightHelper = new THREE.PointLightHelper( light, sphereSize );
-    //scene.add( pointLightHelper )
     return light;
 }
 
@@ -660,13 +651,13 @@ function createMoon() {
     'use strict';
     moon = new THREE.Object3D();
 
-    material = new THREE.MeshPhongMaterial({ color: moonYellow });
+    material = new THREE.MeshPhongMaterial({ color: moonYellow, emissive: moonYellow });
     geometry = new THREE.SphereGeometry(10);
-    mesh = new THREE.Mesh(geometry, material);
-    mesh.scale.set(2,2,2);
-    moon.add(mesh);
+    moonMesh = new THREE.Mesh(geometry, material);
+    moonMesh.scale.set(2,2,2);
+    moon.add(moonMesh);
 
-    objects.push(mesh);
+    objects.push(moonMesh);
     colors.push(moonYellow);
     
     createGlobalLight();
@@ -816,6 +807,12 @@ function turnEmissive() {
     }
     else {
         ufoFlatCylinder.material.emissive.set(gray);
+    }
+    if (globalLight.color.getHex() == black) {
+        moonMesh.material.emissive.set(black);
+    }
+    else {
+        moonMesh.material.emissive.set(moonYellow);
     }
 }
 
